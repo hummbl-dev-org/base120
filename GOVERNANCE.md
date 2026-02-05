@@ -178,15 +178,17 @@ All changes are classified into one of six categories. The CI system automatical
 - All tests pass (`pytest`)
 - Corpus determinism preserved
 - Registry hash validation
-- FM lifecycle state validation
+- FM lifecycle state validation (metadata consistency check)
 - No semantic drift from v1.0.0 specification
 
 **Rollback:** Requires careful migration + validation
 
 **Special Constraints (v1.0.x):**
-- Registry modifications are **PROHIBITED** in v1.0.x
-- FM changes require governance escalation
-- Escalate to FM30+ review process
+- Registry semantic modifications are **PROHIBITED** in v1.0.x
+- FM lifecycle metadata additions are **PERMITTED** (forward compatibility)
+- FM lifecycle state changes are **PROHIBITED** (all FMs remain "stable")
+- New FMs require governance escalation to v1.1.0+
+- Escalate to FM30+ review process for any validation logic changes
 
 ---
 
@@ -281,14 +283,57 @@ Draft → Review → Stable → Deprecated → Removed
 - Stable → Removed (must go through Deprecated)
 - Deprecated → Review
 
+**Lifecycle Metadata Fields:**
+
+Each FM in `registries/fm.json` includes the following lifecycle tracking fields:
+
+- `lifecycle_state`: Current state (draft | review | stable | deprecated | removed)
+- `introduced_in`: Version when FM was first released (e.g., "v1.0.0")
+- `deprecated_in`: Version when FM was deprecated (null if not deprecated)
+- `removed_in`: Version when FM was removed from active use (null if not removed)
+- `deprecation_reason`: Human-readable explanation for deprecation (null if not deprecated)
+
+**Example FM Definition:**
+```json
+{
+  "id": "FM1",
+  "name": "Specification Ambiguity",
+  "lifecycle_state": "stable",
+  "introduced_in": "v1.0.0",
+  "deprecated_in": null,
+  "removed_in": null,
+  "deprecation_reason": null
+}
+```
+
+**State Transition Requirements:**
+
+| Transition | Required Evidence | Required Approvals | Process |
+|------------|------------------|-------------------|---------|
+| **Draft → Review** | Formal FM definition<br/>Use cases documented<br/>Impact analysis | CODEOWNER | Submit PR with FM definition |
+| **Review → Stable** | Corpus test cases added<br/>Documentation updated<br/>No validation logic conflicts | CODEOWNER + 2 reviewers | Merge to release branch |
+| **Review → Draft** | Rationale for rejection | CODEOWNER | Close PR with explanation |
+| **Stable → Deprecated** | Migration guide<br/>Deprecation timeline<br/>Replacement FM (if any) | CODEOWNER + governance board | Requires major version (v1.1.0+) |
+| **Deprecated → Removed** | No active usage in corpus<br/>Grace period expired (min 2 releases)<br/>Migration verification | CODEOWNER + governance board | Requires major version (v2.0.0+) |
+
 **CI Enforcement:**
-- FM lifecycle metadata in `registries/fm.json` (future enhancement)
-- Block transitions that skip required states
+- FM lifecycle metadata now present in `registries/fm.json` (implemented)
+- Block transitions that skip required states (CI validation planned)
 - Require governance approval for Deprecated → Removed
+- Validate all referenced FMs exist and are in valid states
 
 **Current State (v1.0.x):**
 - All FMs (FM1-FM30) are in **Stable** state
-- No lifecycle transitions permitted in v1.0.x
+- All introduced in v1.0.0
+- No lifecycle transitions permitted in v1.0.x (frozen specification)
+- Lifecycle metadata added for forward compatibility with v1.1.0+
+
+**Governance Notes:**
+- New FMs in v1.1.0+ must start in Draft state
+- Deprecation requires full migration path documentation
+- Removed FMs remain in registry with "removed" state for historical tracking
+- FM IDs are never reused (FM1-FM30 reserved permanently)
+
 
 ---
 
@@ -592,6 +637,102 @@ The governance contract is enforced through GitHub Actions workflows that automa
 ---
 
 ## Lifecycle States
+
+### FM Lifecycle and Change Taxonomy Integration
+
+Failure Mode lifecycle states directly integrate with Base120's change taxonomy to ensure proper governance workflows are triggered.
+
+**Mapping: FM Lifecycle State Changes → Change Class**
+
+| FM Lifecycle Change | Change Class | Impact Level | Required Evidence | Governance Workflow |
+|---------------------|-------------|--------------|------------------|-------------------|
+| **Add New FM (Draft → Review)** | Formal Model (FM) | 5 | FM definition<br/>Use case analysis<br/>Corpus test cases<br/>Documentation | 2+ reviewers<br/>CODEOWNER approval<br/>Audit update required |
+| **Stabilize FM (Review → Stable)** | Formal Model (FM) | 5 | Full test coverage<br/>No conflicts with existing FMs<br/>Registry validation<br/>Migration guide (if breaking) | 2+ reviewers<br/>CODEOWNER approval<br/>Release notes update |
+| **Deprecate FM (Stable → Deprecated)** | Formal Model (FM) | 5 | Deprecation timeline<br/>Migration path<br/>Replacement FM (optional)<br/>Backward compatibility plan | 2+ reviewers<br/>CODEOWNER approval<br/>Major version bump (v1.1.0+) |
+| **Remove FM (Deprecated → Removed)** | Breaking | 5+ | No active corpus usage<br/>Grace period verification (2+ releases)<br/>Complete migration docs<br/>Historical tracking maintained | 3+ reviewers<br/>Governance board approval<br/>Major version bump (v2.0.0+) |
+| **Update FM Metadata Only** | Editorial | 2 | Documentation accuracy<br/>No semantic changes | CODEOWNER approval<br/>No external review required |
+
+**Automatic Trigger Detection:**
+
+When a PR modifies `registries/fm.json`, the governance classifier workflow automatically:
+
+1. **Detects FM lifecycle changes** by comparing `lifecycle_state` field values
+2. **Classifies the change** according to the mapping above
+3. **Sets required checks** based on change class (reviewers, tests, evidence)
+4. **Validates state transitions** against allowed transition graph
+5. **Blocks invalid transitions** (e.g., Stable → Removed without Deprecated)
+
+**CI Validation Sequence for FM Changes:**
+
+```yaml
+1. Parse registries/fm.json (before and after)
+2. Identify changed FMs:
+   - New FMs: id present in after but not before
+   - Modified FMs: lifecycle_state changed
+   - Deleted FMs: id present in before but not after (BLOCKED)
+3. Validate each change:
+   - Check transition is valid (Draft→Review, Review→Stable, etc.)
+   - Verify required metadata fields populated
+   - Ensure no backward-incompatible changes in v1.0.x
+4. Map to change class and set required checks
+5. Post PR comment with classification and requirements
+```
+
+**Examples:**
+
+**Example 1: Adding FM31 in v1.1.0**
+```json
+// registries/fm.json (new entry)
+{
+  "id": "FM31",
+  "name": "Certificate Expiration",
+  "lifecycle_state": "draft",
+  "introduced_in": "v1.1.0-draft",
+  "deprecated_in": null,
+  "removed_in": null,
+  "deprecation_reason": null
+}
+```
+- **Detected Change**: New FM (FM31)
+- **Change Class**: Formal Model (FM)
+- **Required**: 2+ reviewers, corpus test case, documentation update
+- **Version**: Must be v1.1.0+ (prohibited in v1.0.x)
+
+**Example 2: Deprecating FM7 in v1.2.0**
+```json
+// registries/fm.json (modified entry)
+{
+  "id": "FM7",
+  "name": "Inconsistent Constraints",
+  "lifecycle_state": "deprecated",
+  "introduced_in": "v1.0.0",
+  "deprecated_in": "v1.2.0",
+  "removed_in": null,
+  "deprecation_reason": "Replaced by more granular FM31 (Certificate Expiration) and FM32 (Constraint Contradiction)"
+}
+```
+- **Detected Change**: FM7 lifecycle change (Stable → Deprecated)
+- **Change Class**: Formal Model (FM)
+- **Required**: Migration guide, backward compatibility plan, 2+ reviewers
+- **Version**: Major version bump required
+
+**Example 3: Invalid Transition (Blocked)**
+```json
+// Attempting: Stable → Removed (skipping Deprecated)
+{
+  "id": "FM7",
+  "lifecycle_state": "removed",  // INVALID
+  "introduced_in": "v1.0.0",
+  "deprecated_in": null,  // ERROR: must deprecate first
+  "removed_in": "v2.0.0",
+  "deprecation_reason": null
+}
+```
+- **Detected**: Invalid state transition (Stable → Removed)
+- **CI Action**: Block merge immediately
+- **Error Message**: "FM7: Invalid transition Stable → Removed. Must transition through Deprecated state first."
+
+---
 
 ### Formal Model Components
 
