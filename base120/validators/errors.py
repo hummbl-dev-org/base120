@@ -15,4 +15,5 @@ def resolve_errors(fms: list[str], err_registry: Sequence[Mapping[str, Any]]) ->
         fm_list = entry.get("fm", [])
         if any(fm in fms for fm in fm_list):
             errs.append(str(entry.get("id", "")))
-    return sorted(set(errs))
+    seen = set()
+    return [x for x in sorted(errs) if not (x in seen or seen.add(x))]

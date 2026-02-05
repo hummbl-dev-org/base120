@@ -1,0 +1,15 @@
+{
+  "version": "v1.1",
+  "drafts": [
+    {
+      "filename": "draft1.md",
+      "mrcc_hash": "",
+      "risk": "medium"
+    },
+    {
+      "filename": "draft2.md",
+      "mrcc_hash": "",
+      "risk": "low"
+    }
+  ]
+}

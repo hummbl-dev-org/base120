@@ -1,0 +1,5 @@
+TOONFile  <-  Artifact+
+Artifact  <-  'artifact' '{' ID MRCC Content '}'
+ID        <-  'id:' [a-zA-Z0-9_-]+
+MRCC      <-  'mrcc_hash:' [a-f0-9]{64}
+Content   <-  'content:' .*

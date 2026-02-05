@@ -14,6 +14,8 @@ dependencies = [
 test = [
   "pytest",
   "pytest-json-report"
+  "pytest>=8.3.4",
+  "pytest-json-report>=1.5.0"
 ]
 
 [project.scripts]

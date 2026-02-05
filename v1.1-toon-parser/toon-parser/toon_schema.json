@@ -1,0 +1,15 @@
+{
+  "version": "v1.0",
+  "description": "Base120 TOON schema for MRCC v1.0",
+  "elements": [
+    {
+      "name": "artifact",
+      "type": "object",
+      "properties": {
+        "id": "string",
+        "mrcc_hash": "string",
+        "content": "string"
+      }
+    }
+  ]
+}

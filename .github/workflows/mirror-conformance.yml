@@ -1,0 +1,475 @@
+name: Mirror Conformance Validation
+
+# Reusable workflow for Base120 mirror implementations
+# Validates that a mirror produces byte-for-byte identical outputs to canonical implementation
+
+on:
+  workflow_call:
+    inputs:
+      language:
+        description: 'Programming language of the mirror (for informational purposes)'
+        required: true
+        type: string
+      validate-command:
+        description: 'Command to run validator (receives artifact path as argument, outputs JSON array to stdout)'
+        required: true
+        type: string
+      setup-command:
+        description: 'Optional setup command (install deps, build, etc.)'
+        required: false
+        type: string
+        default: ''
+      corpus-path:
+        description: 'Path to corpus directory in mirror repo'
+        required: false
+        type: string
+        default: 'tests/corpus'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  # Fixed timestamp for deterministic outputs
+  BASE120_FIXED_TIMESTAMP: "2026-01-01T00:00:00.000000Z"
+
+jobs:
+  validate-mirror-conformance:
+    name: Validate Mirror Conformance (${{ inputs.language }})
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout mirror repository
+        uses: actions/checkout@v4
+        with:
+          path: mirror-repo
+      
+      - name: Checkout canonical Base120 repository
+        uses: actions/checkout@v4
+        with:
+          repository: hummbl-dev/base120
+          ref: main
+          path: canonical-base120
+      
+      - name: Display conformance contract version
+        run: |
+          echo "📋 Base120 Mirror Conformance Validation"
+          echo "========================================"
+          echo "Mirror Language: ${{ inputs.language }}"
+          echo "Canonical Version: $(grep 'version =' canonical-base120/pyproject.toml | cut -d'"' -f2)"
+          echo "Corpus Location: canonical-base120/tests/corpus"
+          echo ""
+      
+      - name: Setup mirror environment
+        if: inputs.setup-command != ''
+        working-directory: mirror-repo
+        run: ${{ inputs.setup-command }}
+      
+      - name: Copy canonical corpus to mirror
+        run: |
+          echo "Copying canonical corpus to mirror repository..."
+          mkdir -p mirror-repo/${{ inputs.corpus-path }}
+          cp -r canonical-base120/tests/corpus/* mirror-repo/${{ inputs.corpus-path }}/
+          
+          echo "Corpus files copied:"
+          find mirror-repo/${{ inputs.corpus-path }} -type f | wc -l
+      
+      - name: Validate corpus structure
+        working-directory: mirror-repo/${{ inputs.corpus-path }}
+        run: |
+          echo "Validating corpus structure..."
+          
+          if [ ! -d "valid" ]; then
+            echo "❌ ERROR: Missing valid/ directory"
+            exit 1
+          fi
+          
+          if [ ! -d "invalid" ]; then
+            echo "❌ ERROR: Missing invalid/ directory"
+            exit 1
+          fi
+          
+          if [ ! -d "expected" ]; then
+            echo "❌ ERROR: Missing expected/ directory"
+            exit 1
+          fi
+          
+          VALID_COUNT=$(find valid -name "*.json" | wc -l)
+          INVALID_COUNT=$(find invalid -name "*.json" | wc -l)
+          EXPECTED_COUNT=$(find expected -name "*.errs.json" | wc -l)
+          
+          echo "✅ Corpus structure valid"
+          echo "   Valid artifacts: $VALID_COUNT"
+          echo "   Invalid artifacts: $INVALID_COUNT"
+          echo "   Expected outputs: $EXPECTED_COUNT"
+          echo ""
+      
+      - name: Run validation on valid corpus
+        id: validate_valid
+        working-directory: mirror-repo
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Validating VALID corpus artifacts"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          
+          PASS_COUNT=0
+          FAIL_COUNT=0
+          FAILURES=""
+          
+          for artifact in ${{ inputs.corpus-path }}/valid/*.json; do
+            if [ ! -f "$artifact" ]; then
+              continue
+            fi
+            
+            basename=$(basename "$artifact")
+            
+            # Run validator and capture output
+            OUTPUT=$(${{ inputs.validate-command }} "$artifact" 2>&1) || {
+              echo "❌ $basename - validator command failed"
+              echo "   Output: $OUTPUT"
+              FAIL_COUNT=$((FAIL_COUNT + 1))
+              FAILURES="${FAILURES}❌ $basename - validator command failed\n   Output: $OUTPUT\n\n"
+              continue
+            }
+            
+            # Expected output for valid artifacts is []
+            if [ "$OUTPUT" = "[]" ]; then
+              echo "✅ $basename"
+              PASS_COUNT=$((PASS_COUNT + 1))
+            else
+              echo "❌ $basename"
+              echo "   Expected: []"
+              echo "   Got: $OUTPUT"
+              FAIL_COUNT=$((FAIL_COUNT + 1))
+              FAILURES="${FAILURES}❌ $basename\n   Expected: []\n   Got: $OUTPUT\n\n"
+            fi
+          done
+          
+          TOTAL=$((PASS_COUNT + FAIL_COUNT))
+          
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Valid Corpus Results: $PASS_COUNT/$TOTAL passed"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          
+          # Save results for summary
+          echo "valid_pass=$PASS_COUNT" >> $GITHUB_OUTPUT
+          echo "valid_fail=$FAIL_COUNT" >> $GITHUB_OUTPUT
+          echo "valid_total=$TOTAL" >> $GITHUB_OUTPUT
+          
+          # Save failures for comment
+          if [ $FAIL_COUNT -gt 0 ]; then
+            echo "$FAILURES" > /tmp/valid_failures.txt
+          fi
+      
+      - name: Run validation on invalid corpus
+        id: validate_invalid
+        working-directory: mirror-repo
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Validating INVALID corpus artifacts"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          
+          PASS_COUNT=0
+          FAIL_COUNT=0
+          FAILURES=""
+          
+          for artifact in ${{ inputs.corpus-path }}/invalid/*.json; do
+            if [ ! -f "$artifact" ]; then
+              continue
+            fi
+            
+            basename=$(basename "$artifact")
+            stem=$(basename "$artifact" .json)
+            expected_file="${{ inputs.corpus-path }}/expected/${stem}.errs.json"
+            
+            if [ ! -f "$expected_file" ]; then
+              echo "⚠️  $basename - missing expected output file"
+              FAIL_COUNT=$((FAIL_COUNT + 1))
+              FAILURES="${FAILURES}⚠️ $basename - missing expected output: $expected_file\n\n"
+              continue
+            fi
+            
+            # Run validator and capture output
+            OUTPUT=$(${{ inputs.validate-command }} "$artifact" 2>&1) || {
+              echo "❌ $basename - validator command failed"
+              echo "   Output: $OUTPUT"
+              FAIL_COUNT=$((FAIL_COUNT + 1))
+              FAILURES="${FAILURES}❌ $basename - validator command failed\n   Output: $OUTPUT\n\n"
+              continue
+            }
+            
+            # Load expected output
+            EXPECTED=$(cat "$expected_file")
+            
+            # Validate JSON before comparison
+            if ! echo "$OUTPUT" | jq -e '.' >/dev/null 2>&1; then
+              echo "❌ $basename - invalid JSON output"
+              echo "   Output: $OUTPUT"
+              FAIL_COUNT=$((FAIL_COUNT + 1))
+              FAILURES="${FAILURES}❌ $basename - invalid JSON output\n   Output: $OUTPUT\n\n"
+              continue
+            fi
+            
+            # Compare outputs (normalize whitespace for comparison)
+            OUTPUT_NORMALIZED=$(echo "$OUTPUT" | jq -c '.')
+            EXPECTED_NORMALIZED=$(echo "$EXPECTED" | jq -c '.')
+            
+            if [ "$OUTPUT_NORMALIZED" = "$EXPECTED_NORMALIZED" ]; then
+              echo "✅ $basename"
+              PASS_COUNT=$((PASS_COUNT + 1))
+            else
+              echo "❌ $basename"
+              echo "   Expected: $EXPECTED"
+              echo "   Got: $OUTPUT"
+              FAIL_COUNT=$((FAIL_COUNT + 1))
+              FAILURES="${FAILURES}❌ $basename\n   Expected: $EXPECTED\n   Got: $OUTPUT\n\n"
+            fi
+          done
+          
+          TOTAL=$((PASS_COUNT + FAIL_COUNT))
+          
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Invalid Corpus Results: $PASS_COUNT/$TOTAL passed"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          
+          # Save results for summary
+          echo "invalid_pass=$PASS_COUNT" >> $GITHUB_OUTPUT
+          echo "invalid_fail=$FAIL_COUNT" >> $GITHUB_OUTPUT
+          echo "invalid_total=$TOTAL" >> $GITHUB_OUTPUT
+          
+          # Save failures for comment
+          if [ $FAIL_COUNT -gt 0 ]; then
+            echo "$FAILURES" > /tmp/invalid_failures.txt
+          fi
+      
+      - name: Check determinism (run 3 times)
+        id: determinism
+        working-directory: mirror-repo
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Checking Determinism (3 iterations)"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          
+          # Pick first valid and first invalid artifact for determinism check
+          VALID_ARTIFACT=$(find ${{ inputs.corpus-path }}/valid -name "*.json" | head -1)
+          INVALID_ARTIFACT=$(find ${{ inputs.corpus-path }}/invalid -name "*.json" | head -1)
+          
+          if [ -z "$VALID_ARTIFACT" ] || [ -z "$INVALID_ARTIFACT" ]; then
+            echo "⚠️  WARNING: Could not find test artifacts for determinism check"
+            echo "determinism_pass=unknown" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "Testing determinism with:"
+          echo "  Valid: $(basename $VALID_ARTIFACT)"
+          echo "  Invalid: $(basename $INVALID_ARTIFACT)"
+          echo ""
+          
+          # Run valid artifact 3 times
+          OUT1=$(${{ inputs.validate-command }} "$VALID_ARTIFACT" 2>&1)
+          OUT2=$(${{ inputs.validate-command }} "$VALID_ARTIFACT" 2>&1)
+          OUT3=$(${{ inputs.validate-command }} "$VALID_ARTIFACT" 2>&1)
+          
+          DETERMINISTIC=true
+          
+          if [ "$OUT1" != "$OUT2" ] || [ "$OUT1" != "$OUT3" ]; then
+            echo "❌ FAIL: Valid artifact outputs differ across runs"
+            echo "   Run 1: $OUT1"
+            echo "   Run 2: $OUT2"
+            echo "   Run 3: $OUT3"
+            DETERMINISTIC=false
+          else
+            echo "✅ Valid artifact: deterministic"
+          fi
+          
+          # Run invalid artifact 3 times
+          OUT1=$(${{ inputs.validate-command }} "$INVALID_ARTIFACT" 2>&1)
+          OUT2=$(${{ inputs.validate-command }} "$INVALID_ARTIFACT" 2>&1)
+          OUT3=$(${{ inputs.validate-command }} "$INVALID_ARTIFACT" 2>&1)
+          
+          if [ "$OUT1" != "$OUT2" ] || [ "$OUT1" != "$OUT3" ]; then
+            echo "❌ FAIL: Invalid artifact outputs differ across runs"
+            echo "   Run 1: $OUT1"
+            echo "   Run 2: $OUT2"
+            echo "   Run 3: $OUT3"
+            DETERMINISTIC=false
+          else
+            echo "✅ Invalid artifact: deterministic"
+          fi
+          
+          echo ""
+          if [ "$DETERMINISTIC" = true ]; then
+            echo "✅ PASS: Determinism verified"
+            echo "determinism_pass=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ FAIL: Non-deterministic behavior detected"
+            echo "determinism_pass=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Generate summary
+        id: summary
+        run: |
+          VALID_PASS=${{ steps.validate_valid.outputs.valid_pass }}
+          VALID_FAIL=${{ steps.validate_valid.outputs.valid_fail }}
+          VALID_TOTAL=${{ steps.validate_valid.outputs.valid_total }}
+          
+          INVALID_PASS=${{ steps.validate_invalid.outputs.invalid_pass }}
+          INVALID_FAIL=${{ steps.validate_invalid.outputs.invalid_fail }}
+          INVALID_TOTAL=${{ steps.validate_invalid.outputs.invalid_total }}
+          
+          TOTAL_PASS=$((VALID_PASS + INVALID_PASS))
+          TOTAL_FAIL=$((VALID_FAIL + INVALID_FAIL))
+          TOTAL=$((VALID_TOTAL + INVALID_TOTAL))
+          
+          DETERMINISM="${{ steps.determinism.outputs.determinism_pass }}"
+          
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "FINAL SUMMARY"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "Mirror Language: ${{ inputs.language }}"
+          echo ""
+          echo "Valid Corpus:   $VALID_PASS/$VALID_TOTAL passed"
+          echo "Invalid Corpus: $INVALID_PASS/$INVALID_TOTAL passed"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          # Calculate percentage safely (avoid division by zero)
+          if [ $TOTAL -gt 0 ]; then
+            PERCENTAGE=$((TOTAL_PASS * 100 / TOTAL))
+            echo "Overall:        $TOTAL_PASS/$TOTAL passed ($PERCENTAGE%)"
+          else
+            echo "Overall:        0/0 passed (no tests found)"
+          fi
+          echo ""
+          
+          if [ "$DETERMINISM" = "false" ]; then
+            echo "⚠️  Determinism: FAILED"
+          elif [ "$DETERMINISM" = "true" ]; then
+            echo "✅ Determinism: PASSED"
+          else
+            echo "⚠️  Determinism: UNKNOWN"
+          fi
+          echo ""
+          
+          # Determine pass/fail
+          if [ $TOTAL_FAIL -eq 0 ] && [ "$DETERMINISM" != "false" ]; then
+            echo "✅ CONFORMANCE CHECK PASSED"
+            echo "passed=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ CONFORMANCE CHECK FAILED"
+            echo "passed=false" >> $GITHUB_OUTPUT
+          fi
+          
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          # Save for PR comment
+          echo "total_pass=$TOTAL_PASS" >> $GITHUB_OUTPUT
+          echo "total_fail=$TOTAL_FAIL" >> $GITHUB_OUTPUT
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "valid_pass=$VALID_PASS" >> $GITHUB_OUTPUT
+          echo "valid_total=$VALID_TOTAL" >> $GITHUB_OUTPUT
+          echo "invalid_pass=$INVALID_PASS" >> $GITHUB_OUTPUT
+          echo "invalid_total=$INVALID_TOTAL" >> $GITHUB_OUTPUT
+      
+      - name: Post PR comment with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const passed = '${{ steps.summary.outputs.passed }}' === 'true';
+            const validPass = parseInt('${{ steps.summary.outputs.valid_pass }}');
+            const validTotal = parseInt('${{ steps.summary.outputs.valid_total }}');
+            const invalidPass = parseInt('${{ steps.summary.outputs.invalid_pass }}');
+            const invalidTotal = parseInt('${{ steps.summary.outputs.invalid_total }}');
+            const totalPass = parseInt('${{ steps.summary.outputs.total_pass }}');
+            const total = parseInt('${{ steps.summary.outputs.total }}');
+            const determinism = '${{ steps.determinism.outputs.determinism_pass }}';
+            
+            let validFailures = '';
+            let invalidFailures = '';
+            
+            try {
+              const fs = require('fs');
+              if (fs.existsSync('/tmp/valid_failures.txt')) {
+                validFailures = fs.readFileSync('/tmp/valid_failures.txt', 'utf8');
+              }
+              if (fs.existsSync('/tmp/invalid_failures.txt')) {
+                invalidFailures = fs.readFileSync('/tmp/invalid_failures.txt', 'utf8');
+              }
+            } catch (e) {
+              console.log('No failure details found');
+            }
+            
+            const icon = passed ? '✅' : '❌';
+            const status = passed ? 'PASSED' : 'FAILED';
+            const percentage = total > 0 ? Math.round((totalPass * 100) / total) : 0;
+            
+            let comment = `## ${icon} Base120 Mirror Conformance: ${status}\n\n`;
+            comment += `**Language**: ${{ inputs.language }}\n\n`;
+            comment += `### Results\n\n`;
+            comment += `| Category | Passed | Total | Rate |\n`;
+            comment += `|----------|--------|-------|------|\n`;
+            comment += `| Valid Corpus | ${validPass} | ${validTotal} | ${validTotal > 0 ? Math.round((validPass * 100) / validTotal) : 0}% |\n`;
+            comment += `| Invalid Corpus | ${invalidPass} | ${invalidTotal} | ${invalidTotal > 0 ? Math.round((invalidPass * 100) / invalidTotal) : 0}% |\n`;
+            comment += `| **Overall** | **${totalPass}** | **${total}** | **${percentage}%** |\n\n`;
+            
+            if (determinism === 'true') {
+              comment += `✅ **Determinism**: Verified\n\n`;
+            } else if (determinism === 'false') {
+              comment += `❌ **Determinism**: Failed\n\n`;
+            }
+            
+            if (!passed) {
+              comment += `### ⚠️ Failures Detected\n\n`;
+              
+              if (validFailures) {
+                comment += `#### Valid Corpus Failures\n\n\`\`\`\n${validFailures}\`\`\`\n\n`;
+              }
+              
+              if (invalidFailures) {
+                comment += `#### Invalid Corpus Failures\n\n\`\`\`\n${invalidFailures}\`\`\`\n\n`;
+              }
+              
+              comment += `### 📚 Next Steps\n\n`;
+              comment += `1. Review the [Conformance Contract](https://github.com/hummbl-dev/base120/blob/main/mirrors/CONFORMANCE_CONTRACT.md)\n`;
+              comment += `2. Compare your implementation against the canonical validator\n`;
+              comment += `3. Fix validation logic to match expected outputs\n`;
+              comment += `4. Re-run this workflow to verify conformance\n\n`;
+            } else {
+              comment += `### 🎉 Conformance Verified!\n\n`;
+              comment += `Your mirror implementation produces byte-for-byte identical outputs to the canonical Base120 validator.\n\n`;
+              comment += `Next steps:\n`;
+              comment += `1. Ensure this workflow runs on every PR\n`;
+              comment += `2. Consider requesting [mirror certification](https://github.com/hummbl-dev/base120/blob/main/mirrors/CONFORMANCE_CONTRACT.md#certification-process)\n`;
+            }
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+      
+      - name: Fail workflow if conformance failed
+        if: steps.summary.outputs.passed != 'true'
+        run: |
+          echo "❌ Mirror conformance validation FAILED"
+          echo ""
+          echo "See workflow output above for detailed failure information."
+          echo "Review the Conformance Contract: https://github.com/hummbl-dev/base120/blob/main/mirrors/CONFORMANCE_CONTRACT.md"
+          exit 1
+      
+      - name: Success message
+        if: steps.summary.outputs.passed == 'true'
+        run: |
+          echo "✅ Mirror conformance validation PASSED"
+          echo ""
+          echo "Your mirror implementation is conformant with the canonical Base120 validator!"

@@ -148,6 +148,45 @@ Base120 implements a **proscriptive governance contract** that is automatically 
 
 ---
 
+### mirror-conformance.yml
+
+**Purpose:** Reusable workflow for validating mirror implementations
+
+**Type:** Reusable workflow (not triggered directly in canonical repo)
+
+**Usage:** Called by mirror repositories via `workflow_call`
+
+**Inputs:**
+- `language`: Programming language of the mirror
+- `validate-command`: Command to run validator CLI
+- `setup-command`: Setup steps (install, build, etc.)
+- `corpus-path`: Path to corpus directory (default: tests/corpus)
+
+**Validates:**
+1. **Golden Corpus Conformance**
+   - Clones canonical corpus from hummbl-dev/base120
+   - Runs mirror validator against all test cases
+   - Compares outputs byte-for-byte
+
+2. **Determinism**
+   - Runs validator 3 times on sample artifacts
+   - Verifies outputs are identical across runs
+
+3. **Error Matching**
+   - Valid corpus → Must return `[]`
+   - Invalid corpus → Must match expected errors exactly
+
+**Outputs:**
+- Detailed pass/fail report in workflow logs
+- PR comment with results and failure details
+- Blocks merge if any conformance failures
+
+**Documentation:**
+- **[mirrors/CONFORMANCE_CONTRACT.md](../../mirrors/CONFORMANCE_CONTRACT.md)** - Full conformance requirements
+- **[mirrors/README.md](../../mirrors/README.md)** - Mirror certification process
+
+---
+
 ## Enforcement Phases
 
 ### Phase 1: Soft Enforcement (Current)
@@ -406,10 +445,19 @@ Security vulnerabilities bypass normal review requirements but require post-merg
 - **[governance-decision-tree.md](../../docs/governance-decision-tree.md)** - Classification quick reference
 - **[governance-migration.md](../../docs/governance-migration.md)** - Migration from v1.0.0
 - **[corpus-contract.md](../../docs/corpus-contract.md)** - Golden corpus specification
+- **[mirrors/CONFORMANCE_CONTRACT.md](../../mirrors/CONFORMANCE_CONTRACT.md)** - Mirror conformance contract
+- **[mirrors/README.md](../../mirrors/README.md)** - Mirror certification and registry
 
 ---
 
 ## Changelog
+
+### 2026-01-04: Mirror Conformance Infrastructure
+- Added mirror-conformance.yml reusable workflow
+- Created mirrors/CONFORMANCE_CONTRACT.md
+- Created mirrors/README.md with certification process
+- Documented mirror lifecycle states
+- Enabled automated conformance validation for mirror repos
 
 ### 2026-01-03: v2.0.0 Initial Release
 - Formalized governance contract

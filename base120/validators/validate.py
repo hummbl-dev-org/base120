@@ -21,7 +21,8 @@ def validate_artifact(
         # Schema failure implies FM15 (Schema Non-Compliance)
         fms = ["FM15"]
         _emit_event(artifact, errs, fms, event_sink)
-        return sorted(set(errs))
+        seen = set()
+        return [x for x in sorted(errs) if not (x in seen or seen.add(x))]
 
     # 2. Subclass → FM
     subclass = str(artifact.get("class", ""))
@@ -33,7 +34,8 @@ def validate_artifact(
     # 4. Emit observability event
     _emit_event(artifact, errs, fms, event_sink)
 
-    return sorted(set(errs))
+    seen = set()
+    return [x for x in sorted(errs) if not (x in seen or seen.add(x))]
 
 
 def _emit_event(
@@ -56,11 +58,15 @@ def _emit_event(
         artifact_id = artifact.get("id", "unknown")
         result = "success" if not error_codes else "failure"
         
+        # Deterministic deduplication: sort first, then deduplicate
+        seen = set()
+        deduplicated_codes = [x for x in sorted(error_codes) if not (x in seen or seen.add(x))]
+        
         event = create_validator_event(
             artifact_id=artifact_id,
             schema_version="v1.0.0",
             result=result,
-            error_codes=sorted(set(error_codes)),
+            error_codes=deduplicated_codes,
             failure_mode_ids=list(failure_mode_ids),
         )
         
