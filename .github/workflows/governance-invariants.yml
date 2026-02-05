@@ -112,16 +112,17 @@ EOF
           HASH1=$(sha256sum /tmp/corpus_run1_clean.json | cut -d' ' -f1)
           HASH2=$(sha256sum /tmp/corpus_run2_clean.json | cut -d' ' -f1)
           HASH3=$(sha256sum /tmp/corpus_run3_clean.json | cut -d' ' -f1)
+
           
           echo "Run 1 hash: $HASH1"
           echo "Run 2 hash: $HASH2"
           echo "Run 3 hash: $HASH3"
-          
+
           if [ "$HASH1" != "$HASH2" ] || [ "$HASH1" != "$HASH3" ]; then
             echo "❌ FAIL: Corpus outputs differ across runs"
             echo "This violates Invariant 1: Golden Corpus Determinism"
             exit 1
           fi
-          
+
           echo "✅ PASS: All corpus runs produced identical output"
           echo "Golden Corpus Determinism verified."
