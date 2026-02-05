@@ -20,4 +20,4 @@ test = [
 base120 = "base120.cli:main"
 
 [tool.setuptools]
-packages = ["base120", "base120.validators", "base120.contract"]
+packages = ["base120", "base120.validators", "base120.contract", "base120.drift"]
