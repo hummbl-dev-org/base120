@@ -13,6 +13,10 @@ base120.egg-info/top_level.txt
 base120/contract/__init__.py
 base120/contract/report.py
 base120/contract/validate.py
+base120/drift/__init__.py
+base120/drift/__main__.py
+base120/drift/capture_baseline.py
+base120/drift/compare.py
 base120/validators/__init__.py
 base120/validators/errors.py
 base120/validators/mappings.py
@@ -21,4 +25,5 @@ base120/validators/validate.py
 tests/test_cli.py
 tests/test_contract.py
 tests/test_corpus.py
+tests/test_drift.py
 tests/test_observability.py
