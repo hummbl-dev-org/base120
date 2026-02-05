@@ -50,7 +50,7 @@ jobs:
 
       - name: Compare output hashes
         env:
-                BASE120_FIXED_TIMESTAMP: "2026-01-01T00:00:00.000000Z"
+          BASE120_FIXED_TIMESTAMP: "2026-01-01T00:00:00.000000Z"
         run: |
           HASH1=$(sha256sum /tmp/corpus_run1.txt | cut -d' ' -f1)
           HASH2=$(sha256sum /tmp/corpus_run2.txt | cut -d' ' -f1)
