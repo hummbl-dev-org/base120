@@ -140,7 +140,7 @@ jobs:
           cat drift-report.txt
       
       - name: Upload drift report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: drift-report
           path: |
