@@ -40,12 +40,12 @@ jobs:
     
     steps:
       - name: Checkout mirror repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: mirror-repo
       
       - name: Checkout canonical Base120 repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: hummbl-dev/base120
           ref: main
