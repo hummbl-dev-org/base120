@@ -32,25 +32,7 @@ jobs:
           BASE120_FIXED_TIMESTAMP: "2026-01-01T00:00:00.000000Z"
         run: |
           pytest tests/test_corpus.py --json-report --json-report-file=/tmp/corpus_run1.json
-          python << 'EOF'
-import json
-with open('/tmp/corpus_run1.json') as f:
-    data = json.load(f)
-# Extract deterministic fields only
-results = {
-    'summary': data['summary'],
-    'tests': [
-        {
-            'nodeid': t['nodeid'],
-            'outcome': t['outcome'],
-            'call': t.get('call', {}).get('longrepr', '')
-        }
-        for t in data['tests']
-    ]
-}
-with open('/tmp/corpus_run1_clean.json', 'w') as f:
-    json.dump(results, f, sort_keys=True, indent=2)
-EOF
+          python scripts/extract_deterministic_results.py /tmp/corpus_run1.json /tmp/corpus_run1_clean.json
           echo "Run 1 completed"
 
       - name: Run corpus tests (iteration 2)
@@ -58,25 +40,7 @@ EOF
           BASE120_FIXED_TIMESTAMP: "2026-01-01T00:00:00.000000Z"
         run: |
           pytest tests/test_corpus.py --json-report --json-report-file=/tmp/corpus_run2.json
-          python << 'EOF'
-import json
-with open('/tmp/corpus_run2.json') as f:
-    data = json.load(f)
-# Extract deterministic fields only
-results = {
-    'summary': data['summary'],
-    'tests': [
-        {
-            'nodeid': t['nodeid'],
-            'outcome': t['outcome'],
-            'call': t.get('call', {}).get('longrepr', '')
-        }
-        for t in data['tests']
-    ]
-}
-with open('/tmp/corpus_run2_clean.json', 'w') as f:
-    json.dump(results, f, sort_keys=True, indent=2)
-EOF
+          python scripts/extract_deterministic_results.py /tmp/corpus_run2.json /tmp/corpus_run2_clean.json
           echo "Run 2 completed"
 
       - name: Run corpus tests (iteration 3)
@@ -84,25 +48,7 @@ EOF
           BASE120_FIXED_TIMESTAMP: "2026-01-01T00:00:00.000000Z"
         run: |
           pytest tests/test_corpus.py --json-report --json-report-file=/tmp/corpus_run3.json
-          python << 'EOF'
-import json
-with open('/tmp/corpus_run3.json') as f:
-    data = json.load(f)
-# Extract deterministic fields only
-results = {
-    'summary': data['summary'],
-    'tests': [
-        {
-            'nodeid': t['nodeid'],
-            'outcome': t['outcome'],
-            'call': t.get('call', {}).get('longrepr', '')
-        }
-        for t in data['tests']
-    ]
-}
-with open('/tmp/corpus_run3_clean.json', 'w') as f:
-    json.dump(results, f, sort_keys=True, indent=2)
-EOF
+          python scripts/extract_deterministic_results.py /tmp/corpus_run3.json /tmp/corpus_run3_clean.json
           echo "Run 3 completed"
 
       - name: Compare output hashes
@@ -112,16 +58,16 @@ EOF
           HASH1=$(sha256sum /tmp/corpus_run1_clean.json | cut -d' ' -f1)
           HASH2=$(sha256sum /tmp/corpus_run2_clean.json | cut -d' ' -f1)
           HASH3=$(sha256sum /tmp/corpus_run3_clean.json | cut -d' ' -f1)
-          
+
           echo "Run 1 hash: $HASH1"
           echo "Run 2 hash: $HASH2"
           echo "Run 3 hash: $HASH3"
-          
+
           if [ "$HASH1" != "$HASH2" ] || [ "$HASH1" != "$HASH3" ]; then
-            echo "❌ FAIL: Corpus outputs differ across runs"
+            echo "FAIL: Corpus outputs differ across runs"
             echo "This violates Invariant 1: Golden Corpus Determinism"
             exit 1
           fi
-          
-          echo "✅ PASS: All corpus runs produced identical output"
+
+          echo "PASS: All corpus runs produced identical output"
           echo "Golden Corpus Determinism verified."
