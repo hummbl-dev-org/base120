@@ -1,0 +1,35 @@
+{
+  "base120_version": "1.0.0",
+  "git_sha": "62a0408efbced6cb45bb85b1469b990d9c2701ed",
+  "results": {
+    "invalid": {
+      "invalid-governance-unrecoverable.json": {
+        "artifact_id": "artifact-invalid-002",
+        "errors": [
+          "ERR-GOV-004"
+        ]
+      },
+      "invalid-recovery-plus-unrecoverable.json": {
+        "artifact_id": "artifact-invalid-003",
+        "errors": [
+          "ERR-GOV-004"
+        ]
+      },
+      "invalid-schema-missing-field.json": {
+        "artifact_id": "artifact-invalid-001",
+        "errors": [
+          "ERR-SCHEMA-001"
+        ]
+      }
+    },
+    "valid": {
+      "valid-basic.json": {
+        "artifact_id": "artifact-valid-001",
+        "errors": []
+      }
+    }
+  },
+  "schema_version": "v1.0.0",
+  "snapshot_id": "62a0408e",
+  "timestamp": "2026-02-15T08:35:47-05:00"
+}
