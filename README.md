@@ -140,3 +140,17 @@ See [governance-decision-tree.md](docs/governance-decision-tree.md) for complete
 **Prohibited:** Schema changes, registry modifications, breaking changes
 
 All changes are automatically classified and validated by CI workflows.
+
+## HUMMBL Ecosystem
+
+This repo is part of the [HUMMBL](https://github.com/hummbl-dev) cognitive AI architecture. Related repos:
+
+| Repo | Purpose |
+|------|---------|
+| [mcp-server](https://github.com/hummbl-dev/mcp-server) | Model Context Protocol server that delivers Base120 models to AI agents |
+| [hummbl-governance](https://github.com/hummbl-dev/hummbl-governance) | Governance runtime (kill switch, circuit breaker, cost governor) |
+| [arbiter](https://github.com/hummbl-dev/arbiter) | Agent-aware code quality scoring and attribution |
+| [agentic-patterns](https://github.com/hummbl-dev/agentic-patterns) | Stdlib-only safety patterns for agentic AI systems |
+| [governed-iac-reference](https://github.com/hummbl-dev/governed-iac-reference) | Reference architecture for governed infrastructure-as-code |
+
+Learn more at [hummbl.io](https://hummbl.io).
