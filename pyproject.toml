@@ -6,8 +6,10 @@ build-backend = "setuptools.build_meta"
 name = "base120"
 version = "1.0.0"
 description = "Deterministic governance substrate implementing the Base120 executable mental model system"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.11"
 dependencies = [
-  "jsonschema>=4.0"
+  "jsonschema>=4.0,<5"
 ]
 
 [project.optional-dependencies]

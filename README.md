@@ -1,142 +1,98 @@
 # Base120
 
-Base120 is a deterministic governance substrate for system design, 
-validation,
-and execution.
+[![CI](https://github.com/hummbl-dev/base120/actions/workflows/base120.yml/badge.svg)](https://github.com/hummbl-dev/base120/actions/workflows/base120.yml)
+[![Drift Detection](https://github.com/hummbl-dev/base120/actions/workflows/drift-detection.yml/badge.svg)](https://github.com/hummbl-dev/base120/actions/workflows/drift-detection.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 
-## Authority Statement
+**Base120 is a deterministic governance substrate for system design, validation, and execution.**
 
-This repository is the authoritative reference implementation for Base120 
-v1.0.0.
-All other language implementations are semantics mirrors and MUST conform 
-exactly
-to the outputs defined here.
+It defines 120 executable mental models across 6 transformations (Perspective, Inversion, Composition, Decomposition, Recursion, Synthesis) that encode failure modes, guardrails, and escalation decisions. These models are machine-checkable: you validate artifacts against them before runtime, not after.
 
-## Contract Unit CLI
+This repository is the authoritative v1.0.0 reference implementation. All other language implementations are semantic mirrors and MUST conform exactly to the outputs defined by the golden corpus in `tests/corpus`.
 
-Base120 now includes a command-line interface for validating **contract units** - governance artifacts that encapsulate schemas, failure graphs, and version metadata.
+## Quick Start
 
-**Quick Start:**
 ```bash
-pip install base120
+pip install -e .
 base120 validate-contract path/to/contract.json
 ```
 
-See [`docs/contract-units.md`](docs/contract-units.md) for complete documentation and examples.
+See [`docs/contract-units.md`](docs/contract-units.md) for complete documentation.
 
-## Canonical Authority
+## Structure
 
-This repository is the authoritative, executable reference for Base120 v1.x.
-All other language implementations are semantic mirrors and MUST match the
-outputs defined by the golden corpus in `tests/corpus`.
+```
+base120/
+  cli.py                 # CLI entry point
+  validators/            # Deterministic artifact validation
+  contract/              # Contract unit validation
+  drift/                 # Semantic drift detection
+  observability.py       # Opt-in structured event emission
+schemas/v1.0.0/          # Frozen JSON schemas
+registries/              # Model mappings and error registry
+tests/corpus/            # Golden corpus (conformance suite)
+governance/              # CAES spec, version pins, SHA256 hashes
+```
 
 ## Versioning
 
-- v1.0.0 — semantic specification freeze
-- v1.0.0-post-ci — CI-stabilized, corpus-verified release (recommended)
+| Version | Status | Notes |
+|---------|--------|-------|
+| v1.0.0 | Frozen | Semantic specification freeze |
+| v1.0.0-post-ci | Recommended | CI-stabilized, corpus-verified |
+
+**v1.0.x policy:** Security fixes, CI hardening, documentation, and corpus additions are permitted. Schema changes, registry modifications, and breaking changes are prohibited.
 
 ## Observability
 
-Base120 v1.0.0 includes a **minimal, semantics-preserving observability layer** 
-for production deployments. This layer:
+Base120 includes a minimal, semantics-preserving observability layer for production deployments:
 
-- **Emits structured JSON events** for validation success and failure
-- **Is opt-in** via an optional `event_sink` parameter (backward compatible)
-- **Uses standard library only** (no runtime dependencies)
-- **Never affects validation semantics** or determinism
-
-### Quick Start
+- Emits structured JSON events for validation success and failure
+- Opt-in via `event_sink` parameter (backward compatible)
+- Standard library only (no runtime dependencies beyond jsonschema)
+- Never affects validation semantics or determinism
 
 ```python
 from base120.validators.validate import validate_artifact
 from base120.observability import create_event_sink
-import json
 
-# Load schemas and registries
-with open("schemas/v1.0.0/artifact.schema.json") as f:
-    schema = json.load(f)
-with open("registries/mappings.json") as f:
-    mappings = json.load(f)
-with open("registries/err.json") as f:
-    err_registry = json.load(f)["registry"]
-
-# Create event sink (logs to stdout)
 event_sink = create_event_sink()
-
-# Validate with observability
-artifact = {"id": "test-001", "domain": "core", "class": "example", 
-            "instance": "test", "models": ["FM1"]}
-errors = validate_artifact(artifact, schema, mappings, err_registry, 
+errors = validate_artifact(artifact, schema, mappings, err_registry,
                           event_sink=event_sink)
 ```
 
-### Event Schema
+Omitting `event_sink` preserves original v1.0.0 behavior with zero overhead. See [`docs/observability.md`](docs/observability.md) for the full specification.
 
-Each validation emits one `validator_result` event:
+## CI
 
-```json
-{
-  "event_type": "validator_result",
-  "artifact_id": "artifact-001",
-  "schema_version": "v1.0.0",
-  "result": "success",
-  "error_codes": [],
-  "failure_mode_ids": [],
-  "timestamp": "2026-01-02T22:15:00.123456Z"
-}
-```
+10 workflows enforce governance automatically:
 
-### Documentation
+| Workflow | Purpose |
+|----------|---------|
+| `base120.yml` | Core tests and validation |
+| `drift-detection.yml` | Nightly semantic drift check |
+| `governance-audit.yml` | Change classification audit |
+| `governance-invariants.yml` | Frozen-spec invariant checks |
+| `mirror-conformance.yml` | Cross-implementation conformance |
+| `guardrails.yml` | PR guardrails |
 
-- **Full specification:** [`docs/observability.md`](docs/observability.md)
-- **Event schema:** Fields, guarantees, and integration patterns
-- **Governance status:** Part of v1.0.x contract (Indicated work per FM19)
+## Governance
 
-### Backward Compatibility
+Base120 implements a formal governance contract with automated CI enforcement. See [GOVERNANCE.md](GOVERNANCE.md) for the complete specification.
 
-Omitting `event_sink` (default) preserves original v1.0.0 behavior with no 
-observability overhead:
-
-```python
-# No events emitted, identical to original v1.0.0
-errors = validate_artifact(artifact, schema, mappings, err_registry)
-```
-
-This observability layer addresses **FM19 (Observability Failure)** from the 
-Base120 governance framework and is production-ready for deployment monitoring.
-
----
-
-## Governance & Contributing
-
-Base120 implements a **formal governance contract** with automated CI enforcement to ensure:
-
-- **Deterministic validation** across all implementations
-- **Mathematical rigor** in formal model changes  
-- **Audit trails** for substantive changes
-- **Version policy enforcement** (v1.0.x is a frozen specification)
-
-### Quick Links
-
-- **[GOVERNANCE.md](GOVERNANCE.md)** - Complete governance specification
-- **[Contributing Guide](docs/governance-migration.md)** - How to submit changes
-- **[Decision Tree](docs/governance-decision-tree.md)** - Quick classification reference
-
-### Change Classes
-
-| If you're changing... | Class | Review |
-|-----------------------|-------|--------|
+| Change type | Class | Review required |
+|-------------|-------|-----------------|
 | Typos, formatting | Trivial | CODEOWNER only |
 | Documentation | Editorial | CODEOWNER only |
 | Test corpus | Corpus | CODEOWNER + tests |
 | Schemas | Schema | 1+ reviewers |
 | Formal models | FM | 2+ reviewers |
 
-See [governance-decision-tree.md](docs/governance-decision-tree.md) for complete classification guide.
+## Contributing
 
-### v1.0.x Policy
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. The short version: this is a frozen v1.0.x spec, so most contributions are documentation, corpus additions, or CI improvements.
 
-**Permitted:** Security fixes, CI hardening, documentation, corpus additions  
-**Prohibited:** Schema changes, registry modifications, breaking changes
+## License
 
-All changes are automatically classified and validated by CI workflows.
+Apache 2.0. See [LICENSE](LICENSE).
