@@ -1,6 +1,8 @@
 # Base120
 
-Base120 is a deterministic governance substrate for system design, 
+[![CI](https://github.com/hummbl-dev/base120/actions/workflows/ci.yml/badge.svg)](https://github.com/hummbl-dev/base120/actions/workflows/ci.yml)
+
+Base120 is a deterministic governance substrate for system design,
 validation,
 and execution.
 
