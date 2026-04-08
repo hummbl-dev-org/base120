@@ -56,6 +56,7 @@ base120/                    # Core library
 | 2.7 | **Low** | `BASE120_FIXED_TIMESTAMP` env var in `observability.py` allows overriding timestamps. This is documented and used only for testing determinism. Acceptable, but production deployments should ensure this isn't set. |
 | 2.8 | **Info** | No cryptographic signing of releases or artifacts (noted in `SECURITY.md` as planned for v1.1.0). |
 | 2.9 | **Pass** | Minimal dependency surface: only `jsonschema>=4.0` at runtime. Low supply chain risk. |
+| 2.10 | **Medium** | `registries/registry-hashes.json` contains placeholder strings (`<hash_fm>`, `<hash_err>`, `<hash_map>`) instead of actual SHA-256 hashes. This undermines registry integrity verification. |
 
 ---
 
@@ -187,7 +188,7 @@ base120/                    # Core library
 
 | Severity | Count | Description |
 |----------|-------|-------------|
-| **Medium** | 2 | CI action version pinning inconsistency |
+| **Medium** | 3 | CI action version pinning inconsistency; registry hash placeholders |
 | **Low** | 10 | Minor code, test, CI, and hygiene improvements |
 | **Info** | 17 | Informational observations, no action required |
 | **Pass** | 10 | Positive findings — things done well |
@@ -196,9 +197,10 @@ base120/                    # Core library
 
 ## Recommended Actions (Priority Order)
 
-1. **Fix CI action pinning inconsistency** (4.1, 4.2): Align `ci.yml` checkout/setup-python versions with other workflows.
-2. **Add `base120.egg-info/` to `.gitignore`** (7.1): Standard Python build artifact should not be committed.
-3. **Add `python_requires=">=3.11"` to `pyproject.toml`** (7.6): Match documented requirement.
-4. **Add standard Python patterns to `.gitignore`** (7.2): `dist/`, `build/`, `*.egg`.
-5. **Consider consolidating CI workflows** (4.3, 4.5): `guardrails.yml` duplicates existing CI.
-6. **Consider organizing root-level files** (6.2-6.5): Move audit docs, patches, planning files into subdirectories.
+1. **Fix registry hash placeholders** (2.10): Compute and store actual SHA-256 hashes in `registries/registry-hashes.json`.
+2. **Fix CI action pinning inconsistency** (4.1, 4.2): Align `ci.yml` checkout/setup-python versions with other workflows.
+3. **Add `base120.egg-info/` to `.gitignore`** (7.1): Standard Python build artifact should not be committed.
+4. **Add `python_requires=">=3.11"` to `pyproject.toml`** (7.6): Match documented requirement.
+5. **Add standard Python patterns to `.gitignore`** (7.2): `dist/`, `build/`, `*.egg`.
+6. **Consider consolidating CI workflows** (4.3, 4.5): `guardrails.yml` duplicates existing CI.
+7. **Consider organizing root-level files** (6.2-6.5): Move audit docs, patches, planning files into subdirectories.
