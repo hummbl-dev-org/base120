@@ -32,6 +32,12 @@ python -m pytest tests/ -v
 - Add tests for new functionality
 - Keep changes focused and minimal
 
+## Test File Conventions
+
+- Only `import pytest` if you are using pytest fixtures, marks (`@pytest.mark.*`), or `pytest.raises` / `pytest.warns`. Plain assertion-based tests need no pytest import.
+- Only `import time` (or any stdlib module) if it is actually referenced in the test body.
+- Run `make lint` before committing — unused imports are caught by ruff (F401) and will fail CI.
+
 ## Governance
 
 Base120 v1.0.x is a **frozen specification**. Schema changes, registry modifications, and breaking changes are not accepted on the v1.0.x line. See [GOVERNANCE.md](GOVERNANCE.md) for the full governance contract and change classification system.
