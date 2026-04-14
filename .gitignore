@@ -9,3 +9,4 @@ contract_report.json
 
 # Drift detection reports (keep snapshots, exclude drift reports)
 artifacts/golden_corpus_snapshots/drift-report-*.json
+*.html
