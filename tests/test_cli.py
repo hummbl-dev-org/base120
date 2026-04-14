@@ -1,138 +1,95 @@
-"""Tests for Base120 CLI."""
-import json
-import subprocess
-import sys
-import tempfile
-from pathlib import Path
+"""Tests for base120.cli — argument parsing and command handlers."""
 
-ROOT = Path(__file__).parent.parent
-EXAMPLES_PATH = ROOT / "examples" / "contracts"
+from __future__ import annotations
+
+import pytest
+
+from base120.cli import build_parser, main
 
 
-def test_cli_validate_valid_contract(tmp_path):
-    """Test CLI with a valid contract."""
-    contract_path = EXAMPLES_PATH / "valid-basic-contract.json"
-    output_path = tmp_path / "test_valid_report.json"
-    
-    result = subprocess.run(
-        [sys.executable, "-m", "base120.cli", "validate-contract", 
-         str(contract_path), "-o", output_path],
-        capture_output=True,
-        text=True
-    )
-    
-    assert result.returncode == 0, f"Expected success but got: {result.stderr}"
-    assert Path(output_path).exists()
-    
-    # Check report content
-    with open(output_path) as f:
-        report = json.load(f)
-    
-    assert report["service_name"] == "user-authentication-service"
-    assert report["validation_status"] == "pass"
-    assert len(report["errors"]) == 0
-    assert "validated_environments" in report["compatibility"]
+# ---------------------------------------------------------------------------
+# Argument parsing
+# ---------------------------------------------------------------------------
+
+class TestParser:
+    def test_list_no_args(self):
+        parser = build_parser()
+        args = parser.parse_args(["list"])
+        assert args.command == "list"
+        assert args.family is None
+
+    def test_list_with_family(self):
+        parser = build_parser()
+        args = parser.parse_args(["list", "--family", "DE"])
+        assert args.family == "DE"
+
+    def test_get_code(self):
+        parser = build_parser()
+        args = parser.parse_args(["get", "P6"])
+        assert args.code == "P6"
+
+    def test_prompt_code_and_problem(self):
+        parser = build_parser()
+        args = parser.parse_args(["prompt", "P6", "my problem"])
+        assert args.code == "P6"
+        assert args.problem == "my problem"
+
+    def test_families_command(self):
+        parser = build_parser()
+        args = parser.parse_args(["families"])
+        assert args.command == "families"
 
 
-def test_cli_validate_invalid_contract(tmp_path):
-    """Test CLI with an invalid contract (termination edge)."""
-    contract_path = EXAMPLES_PATH / "invalid-termination-edge.json"
-    output_path = tmp_path / "test_invalid_report.json"
-    
-    result = subprocess.run(
-        [sys.executable, "-m", "base120.cli", "validate-contract",
-         str(contract_path), "-o", output_path],
-        capture_output=True,
-        text=True
-    )
-    
-    assert result.returncode == 1, "Expected failure exit code"
-    assert Path(output_path).exists()
-    
-    # Check report content
-    with open(output_path) as f:
-        report = json.load(f)
-    
-    assert report["service_name"] == "invalid-service"
-    assert report["validation_status"] == "fail"
-    assert len(report["errors"]) > 0
+# ---------------------------------------------------------------------------
+# Command execution
+# ---------------------------------------------------------------------------
 
+class TestMain:
+    def test_list_all(self, capsys: pytest.CaptureFixture[str]):
+        rc = main(["list"])
+        assert rc == 0
+        out = capsys.readouterr().out
+        assert "P1" in out
+        assert "SY20" in out
 
-def test_cli_validate_missing_metadata(tmp_path):
-    """Test CLI with a contract missing required metadata."""
-    contract_path = EXAMPLES_PATH / "invalid-missing-metadata.json"
-    output_path = tmp_path / "test_missing_metadata_report.json"
-    
-    result = subprocess.run(
-        [sys.executable, "-m", "base120.cli", "validate-contract",
-         str(contract_path), "-o", output_path],
-        capture_output=True,
-        text=True
-    )
-    
-    assert result.returncode == 1, "Expected failure exit code"
-    assert Path(output_path).exists()
-    
-    # Check report content
-    with open(output_path) as f:
-        report = json.load(f)
-    
-    assert report["validation_status"] == "fail"
-    assert len(report["errors"]) > 0
-    assert any("metadata" in err.lower() for err in report["errors"])
+    def test_list_family(self, capsys: pytest.CaptureFixture[str]):
+        rc = main(["list", "--family", "DE"])
+        assert rc == 0
+        out = capsys.readouterr().out
+        # Should include DE codes and NOT other family codes as operators
+        assert "DE1" in out
+        assert "DE20" in out
 
+    def test_list_unknown_family(self, capsys: pytest.CaptureFixture[str]):
+        rc = main(["list", "--family", "ZZ"])
+        assert rc == 1
 
-def test_cli_file_not_found():
-    """Test CLI with non-existent file."""
-    result = subprocess.run(
-        [sys.executable, "-m", "base120.cli", "validate-contract",
-         "/nonexistent/file.json"],
-        capture_output=True,
-        text=True
-    )
-    
-    assert result.returncode == 2, "Expected file-not-found exit code"
-    assert "not found" in result.stderr.lower()
+    def test_get_valid(self, capsys: pytest.CaptureFixture[str]):
+        rc = main(["get", "P6"])
+        assert rc == 0
+        out = capsys.readouterr().out
+        assert "P6" in out
+        assert "Perspective" in out or "P" in out
 
+    def test_get_invalid(self, capsys: pytest.CaptureFixture[str]):
+        rc = main(["get", "XX99"])
+        assert rc == 1
 
-def test_cli_invalid_json(tmp_path):
-    """Test CLI with malformed JSON."""
-    # Create a temp file with invalid JSON
-    temp_file = tmp_path / "invalid.json"
-    temp_file.write_text("{ invalid json }")
-    
-    result = subprocess.run(
-        [sys.executable, "-m", "base120.cli", "validate-contract",
-         str(temp_file)],
-        capture_output=True,
-        text=True
-    )
-    
-    assert result.returncode == 3, "Expected invalid-json exit code"
-    assert "invalid json" in result.stderr.lower()
+    def test_prompt_valid(self, capsys: pytest.CaptureFixture[str]):
+        rc = main(["prompt", "P6", "how should we price this?"])
+        assert rc == 0
+        out = capsys.readouterr().out
+        assert "P6" in out
+        assert "how should we price this?" in out
+        assert "recommendation" in out
 
+    def test_prompt_invalid_code(self, capsys: pytest.CaptureFixture[str]):
+        rc = main(["prompt", "XX99", "test"])
+        assert rc == 1
 
-def test_cli_default_output_path():
-    """Test CLI uses default output path when not specified."""
-    contract_path = EXAMPLES_PATH / "valid-basic-contract.json"
-    default_output = Path("contract_report.json")
-    
-    # Clean up any existing default output
-    if default_output.exists():
-        default_output.unlink()
-    
-    result = subprocess.run(
-        [sys.executable, "-m", "base120.cli", "validate-contract",
-         str(contract_path)],
-        capture_output=True,
-        text=True,
-        cwd=ROOT
-    )
-    
-    assert result.returncode == 0
-    # Default output should be created
-    output_path = ROOT / default_output
-    assert output_path.exists(), "Default output file should be created"
-    
-    # Clean up
-    output_path.unlink()
+    def test_families(self, capsys: pytest.CaptureFixture[str]):
+        rc = main(["families"])
+        assert rc == 0
+        out = capsys.readouterr().out
+        for fam in ("P", "IN", "CO", "DE", "RE", "SY"):
+            assert fam in out

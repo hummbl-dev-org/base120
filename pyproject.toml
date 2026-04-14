@@ -4,20 +4,25 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "base120"
-version = "1.0.0"
-description = "Deterministic governance substrate implementing the Base120 executable mental model system"
-dependencies = [
-  "jsonschema>=4.0"
-]
+version = "2.0.0.dev0"
+description = "120 reasoning operators for structured thinking — stdlib-only, tuple-native"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "Apache-2.0"}
+dependencies = []
 
 [project.optional-dependencies]
 test = [
   "pytest>=8.3.4",
-  "pytest-json-report>=1.5.0"
 ]
 
 [project.scripts]
 base120 = "base120.cli:main"
+base120-mcp = "base120.mcp_server:main"
 
-[tool.setuptools]
-packages = ["base120", "base120.validators", "base120.contract", "base120.drift"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["base120*"]
+
+[tool.setuptools.package-data]
+base120 = ["data/*.json"]

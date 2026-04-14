@@ -1,136 +1,115 @@
-"""Base120 command-line interface."""
-import sys
-import json
+"""Base120 CLI.
+
+Commands:
+  base120 list                    — list all 120 operators
+  base120 list --family DE        — list operators for one family
+  base120 get P6                  — show one operator's details
+  base120 prompt P6 "problem"     — generate a system prompt
+  base120 families                — list the 6 families with descriptions
+
+Stdlib only. Zero third-party dependencies.
+"""
+
+from __future__ import annotations
+
 import argparse
-from pathlib import Path
-from typing import Any
+import sys
 
-from base120.contract.validate import validate_contract
-from base120.contract.report import generate_report
+from base120.engine import Engine, FAMILY_NAMES
 
 
-def load_json_file(path: Path) -> dict[str, Any]:
-    """Load and parse a JSON file."""
-    try:
-        with open(path, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        print(f"Error: File not found: {path}", file=sys.stderr)
-        sys.exit(2)
-    except json.JSONDecodeError as e:
-        print(f"Error: Invalid JSON in {path}: {e}", file=sys.stderr)
-        sys.exit(3)
-    except Exception as e:
-        print(f"Error: Failed to read {path}: {e}", file=sys.stderr)
-        sys.exit(4)
-
-
-def validate_contract_command(args: argparse.Namespace) -> int:
-    """
-    Validate a contract unit file.
-    
-    Returns:
-        0 if validation succeeds
-        1 if validation fails
-        2+ for other errors (file not found, invalid JSON, etc.)
-    """
-    contract_path = Path(args.contract_path)
-    
-    # Load contract unit
-    contract = load_json_file(contract_path)
-    
-    # Load contract schema
-    schema_path = Path(__file__).parent.parent / "schemas" / "v1.0.0" / "contract.schema.json"
-    contract_schema = load_json_file(schema_path)
-    
-    # Validate contract
-    is_valid, errors, warnings = validate_contract(contract, contract_schema)
-    
-    # Extract metadata for report
-    service_name = contract.get("service_name", "unknown")
-    metadata = contract.get("metadata", {})
-    compatibility = metadata.get("compatibility", {})
-    environments = compatibility.get("environments", [])
-    
-    # Generate report
-    report = generate_report(
-        service_name=service_name,
-        is_valid=is_valid,
-        errors=errors,
-        warnings=warnings,
-        validated_environments=environments
-    )
-    
-    # Write report to file
-    output_path = Path(args.output)
-    try:
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(report, f, indent=2, ensure_ascii=False)
-            f.write('\n')  # Add trailing newline
-        print(f"Validation report written to: {output_path}")
-    except Exception as e:
-        print(f"Error: Failed to write report to {output_path}: {e}", file=sys.stderr)
-        sys.exit(5)
-    
-    # Print validation results to stdout
-    print(f"\nService: {service_name}")
-    print(f"Status: {report['validation_status'].upper()}")
-    
-    if errors:
-        print(f"\nErrors ({len(errors)}):")
-        for i, error in enumerate(errors, 1):
-            print(f"  {i}. {error}")
-    
-    if warnings:
-        print(f"\nWarnings ({len(warnings)}):")
-        for i, warning in enumerate(warnings, 1):
-            print(f"  {i}. {warning}")
-    
-    if is_valid:
-        print("\n✓ Contract validation PASSED")
-        return 0
-    else:
-        print("\n✗ Contract validation FAILED")
+def _cmd_list(engine: Engine, args: argparse.Namespace) -> int:
+    family: str | None = args.family
+    ops = engine.list(family=family)
+    if not ops:
+        print(f"No operators found for family {family!r}.", file=sys.stderr)
         return 1
-
-
-def main() -> int:
-    """Main CLI entry point."""
-    parser = argparse.ArgumentParser(
-        prog='base120',
-        description='Base120 governance substrate CLI'
-    )
-    
-    subparsers = parser.add_subparsers(
-        title='commands',
-        dest='command',
-        required=True
-    )
-    
-    # validate-contract command
-    validate_parser = subparsers.add_parser(
-        'validate-contract',
-        help='Validate a contract unit file'
-    )
-    validate_parser.add_argument(
-        'contract_path',
-        help='Path to the contract unit JSON file'
-    )
-    validate_parser.add_argument(
-        '-o', '--output',
-        default='contract_report.json',
-        help='Output path for validation report (default: contract_report.json)'
-    )
-    
-    # Parse arguments
-    args = parser.parse_args()
-    
-    # Route to command handler
-    if args.command == 'validate-contract':
-        return validate_contract_command(args)
-    
+    if family:
+        fname = FAMILY_NAMES.get(family.upper(), family.upper())
+        print(f"{fname} ({family.upper()}) — {len(ops)} operators\n")
+    for op in ops:
+        print(f"  {op.code:<6}  {op.name}")
     return 0
 
 
-if __name__ == '__main__':
+def _cmd_get(engine: Engine, args: argparse.Namespace) -> int:
+    op = engine.get(args.code)
+    if op is None:
+        print(f"Unknown operator code: {args.code!r}", file=sys.stderr)
+        return 1
+    fname = FAMILY_NAMES.get(op.transformation, op.transformation)
+    print(f"{op.code}: {op.name}")
+    print(f"  Family:     {op.transformation} — {fname}")
+    print(f"  Definition: {op.definition}")
+    return 0
+
+
+def _cmd_prompt(engine: Engine, args: argparse.Namespace) -> int:
+    try:
+        prompt = engine.prompt(args.code, args.problem)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    print(prompt)
+    return 0
+
+
+def _cmd_families(engine: Engine, _args: argparse.Namespace) -> int:
+    for fam in engine.families():
+        name = FAMILY_NAMES.get(fam, fam)
+        ops = engine.list(family=fam)
+        print(f"  {fam:<4}  {name:<16}  {len(ops)} operators")
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="base120",
+        description="Base120 — 120 reasoning operators for structured thinking.",
+    )
+    sub = parser.add_subparsers(dest="command", metavar="command")
+    sub.required = True
+
+    # list
+    p_list = sub.add_parser("list", help="List operators")
+    p_list.add_argument(
+        "--family",
+        metavar="FAMILY",
+        help="Filter by family: P, IN, CO, DE, RE, SY",
+    )
+
+    # get
+    p_get = sub.add_parser("get", help="Show operator details")
+    p_get.add_argument("code", help="Operator code, e.g. P6 or DE1")
+
+    # prompt
+    p_prompt = sub.add_parser("prompt", help="Generate a system prompt")
+    p_prompt.add_argument("code", help="Operator code, e.g. P6")
+    p_prompt.add_argument("problem", help="Problem statement to reason about")
+
+    # families
+    sub.add_parser("families", help="List the 6 operator families")
+
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    engine = Engine()
+
+    dispatch = {
+        "list":     _cmd_list,
+        "get":      _cmd_get,
+        "prompt":   _cmd_prompt,
+        "families": _cmd_families,
+    }
+    handler = dispatch.get(args.command)
+    if handler is None:
+        parser.print_help()
+        return 1
+    return handler(engine, args)
+
+
+if __name__ == "__main__":
     sys.exit(main())

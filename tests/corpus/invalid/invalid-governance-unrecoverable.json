@@ -1,7 +1,0 @@
-{
-  "id": "artifact-invalid-002",
-  "domain": "core",
-  "class": "99",
-  "instance": "unrecoverable",
-  "models": ["FM30"]
-}

@@ -1,12 +1,19 @@
 # Base120
 
-[![CI](https://github.com/hummbl-dev/base120/actions/workflows/ci.yml/badge.svg)](https://github.com/hummbl-dev/base120/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/base120)](https://pypi.org/project/base120/)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
-[![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-blue)](LICENSE)
-[![v1.0.0](https://img.shields.io/badge/spec-v1.0.0_frozen-orange)]()
+> **v1 Python package RETIRED (2026-04-14).** The Python code has been removed.
+> The canonical registry (`Base120_Canonical_Model_Registry.yaml`) and data files
+> (`registries/`) remain here as source of truth. The v2 SDK is in development.
+>
+> **FM taxonomy (FM1–FM30) migrated to:**
+> [`hummbl-governance`](https://github.com/hummbl-research/hummbl-governance) v0.4.0
+> — `from hummbl_governance.errors import FailureMode, HummblError`
+>
+> **MCP server (TypeScript, live):**
+> [`mcp-server`](https://github.com/hummbl-research/mcp-server) — all 120 operators served via MCP
 
-**120 mental models for structured reasoning.** Use them to analyze problems, design systems, and make decisions -- whether you are a human, an AI agent, or a fleet of both.
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-blue)](LICENSE)
+
+**120 mental models for structured reasoning.** Use them to analyze problems, design systems, and make decisions — whether you are a human, an AI agent, or a fleet of both.
 
 ## Quick Example
 

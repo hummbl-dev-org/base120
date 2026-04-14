@@ -1,7 +1,0 @@
-{
-  "id": "artifact-valid-001",
-  "domain": "core",
-  "class": "example",
-  "instance": "happy-path",
-  "models": ["FM1"]
-}
