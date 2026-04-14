@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from base120.engine import Engine
 from base120.models import Operator
 

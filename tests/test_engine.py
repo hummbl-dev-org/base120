@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from base120.engine import Engine, FAMILIES, FAMILY_NAMES
+from base120.engine import Engine, FAMILIES
 from base120.models import ApplyResult, Operator
 
 
