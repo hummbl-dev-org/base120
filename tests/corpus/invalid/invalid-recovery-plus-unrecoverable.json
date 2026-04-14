@@ -1,7 +1,0 @@
-{
-  "id": "artifact-invalid-003",
-  "domain": "core",
-  "class": "22",
-  "instance": "compound-failure",
-  "models": ["FM29", "FM30"]
-}
