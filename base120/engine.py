@@ -13,6 +13,7 @@ Zero third-party dependencies. Stdlib only.
 from __future__ import annotations
 
 import json
+import re
 from functools import lru_cache
 from pathlib import Path
 
@@ -31,6 +32,19 @@ FAMILY_NAMES: dict[str, str] = {
     "RE": "Recursion",
     "SY": "Synthesis",
 }
+
+
+_STOP_WORDS = frozenset({
+    "a", "an", "the", "and", "or", "of", "in", "to", "for",
+    "with", "as", "by", "on", "at", "is", "are", "be", "it",
+    "its", "this", "that", "how", "what", "why", "when", "where",
+})
+
+
+def _tokenize(text: str) -> frozenset[str]:
+    """Lowercase word tokens, length ≥ 3, stop-words removed."""
+    words = re.split(r"[^a-zA-Z0-9]+", text.lower())
+    return frozenset(w for w in words if len(w) >= 3 and w not in _STOP_WORDS)
 
 
 @lru_cache(maxsize=1)
@@ -136,6 +150,40 @@ class Engine:
             f'  "confidence": float 0.0–1.0 — your certainty\n'
             f'  "reasoning": string — key steps that led to the recommendation\n'
         )
+
+    def select(self, problem: str, n: int = 5) -> list[tuple[Operator, float]]:
+        """Recommend operators for a given problem description.
+
+        Uses keyword overlap between the problem text and each operator's
+        name and definition. Returns operators sorted by relevance score,
+        highest first.
+
+        Args:
+            problem: Natural-language problem description.
+            n:       Number of recommendations to return (default 5).
+                     Capped at 120. n=0 returns an empty list.
+
+        Returns:
+            List of (Operator, score) tuples, sorted by score descending.
+            Score is in [0.0, 1.0] — fraction of problem tokens found in
+            the operator's name+definition.
+        """
+        if n == 0:
+            return []
+        ops = self.list()
+        problem_tokens = _tokenize(problem)
+        scored: list[tuple[Operator, float]] = []
+        for op in ops:
+            op_text = op.name + " " + op.definition
+            op_tokens = _tokenize(op_text)
+            if problem_tokens:
+                overlap = len(problem_tokens & op_tokens)
+                score = overlap / len(problem_tokens)
+            else:
+                score = 0.0
+            scored.append((op, round(min(score, 1.0), 6)))
+        scored.sort(key=lambda x: x[1], reverse=True)
+        return scored[:n]
 
     def record(
         self,
