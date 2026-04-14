@@ -24,6 +24,21 @@ def load_fm_registry(content: str) -> dict:
     return json.loads(content)
 
 
+def _validate_existing_fm(fm_id: str, before_fm: dict, after_fm: dict, errors: list[str]) -> None:
+    """Validate a single FM that exists in both before and after registries."""
+    if before_fm.get('name') != after_fm.get('name'):
+        errors.append(f"{fm_id}: Name changed (prohibited in v1.0.x)")
+
+    if 'lifecycle_state' in after_fm and after_fm['lifecycle_state'] != 'stable':
+        errors.append(
+            f"{fm_id}: lifecycle_state is '{after_fm['lifecycle_state']}' (must be 'stable' in v1.0.x)"
+        )
+
+    for core_field in ['id', 'name']:
+        if core_field in before_fm and core_field not in after_fm:
+            errors.append(f"{fm_id}: Core field '{core_field}' removed (prohibited)")
+
+
 def validate_metadata_only_change(before_content: str, after_content: str) -> tuple[bool, list[str]]:
     """Validate that changes are metadata-only additions.
 
@@ -37,44 +52,21 @@ def validate_metadata_only_change(before_content: str, after_content: str) -> tu
     before_fms = {fm['id']: fm for fm in before['registry']}
     after_fms = {fm['id']: fm for fm in after['registry']}
 
-    # Check 1: FM count must be identical
     if len(before_fms) != len(after_fms):
         errors.append(f"FM count changed: {len(before_fms)} -> {len(after_fms)} (prohibited in v1.0.x)")
 
-    # Check 2: No FMs removed
     removed_fms = set(before_fms.keys()) - set(after_fms.keys())
     if removed_fms:
         errors.append(f"FMs removed: {', '.join(sorted(removed_fms))} (prohibited in v1.0.x)")
 
-    # Check 3: No FMs added
     added_fms = set(after_fms.keys()) - set(before_fms.keys())
     if added_fms:
         errors.append(f"FMs added: {', '.join(sorted(added_fms))} (prohibited in v1.0.x - escalate to v1.1.0+)")
 
-    # Check 4: Validate existing FMs
-    for fm_id in before_fms.keys():
-        if fm_id not in after_fms:
-            continue
+    for fm_id, before_fm in before_fms.items():
+        if fm_id in after_fms:
+            _validate_existing_fm(fm_id, before_fm, after_fms[fm_id], errors)
 
-        before_fm = before_fms[fm_id]
-        after_fm = after_fms[fm_id]
-
-        # Check 4a: Name unchanged
-        if before_fm.get('name') != after_fm.get('name'):
-            errors.append(f"{fm_id}: Name changed (prohibited in v1.0.x)")
-
-        # Check 4b: If lifecycle_state exists, must be "stable"
-        if 'lifecycle_state' in after_fm and after_fm['lifecycle_state'] != 'stable':
-            errors.append(
-                f"{fm_id}: lifecycle_state is '{after_fm['lifecycle_state']}' (must be 'stable' in v1.0.x)"
-            )
-
-        # Check 4c: Core fields not removed
-        for core_field in ['id', 'name']:
-            if core_field in before_fm and core_field not in after_fm:
-                errors.append(f"{fm_id}: Core field '{core_field}' removed (prohibited)")
-
-    # Check 5: Version field unchanged
     if before.get('version') != after.get('version'):
         errors.append(
             f"Registry version changed: {before.get('version')} -> {after.get('version')} (must remain v1.0.0)"
