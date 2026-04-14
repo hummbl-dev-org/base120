@@ -1,17 +1,3 @@
-# RETIRED — 2026-04-14
-#
-# The base120 Python package (v1.0.0) has been retired. The Python code that
-# lived here has been removed. See RETIREMENT.md for details.
-#
-# What lives here now:
-#   Base120_Canonical_Model_Registry.yaml  — authoritative operator definitions
-#   registries/                            — fm.json, err.json, mappings.json
-#   docs/, schemas/, artifacts/            — research and design material
-#
-# Successor packages:
-#   hummbl-governance  — FM1–FM30 registry, HummblError enum, delegation tokens
-#   base120 SDK        — coming; stdlib-only, tuple-native, CLI-first
-
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
@@ -19,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "base120"
 version = "2.0.0.dev0"
-description = "Base120 reasoning operator registry and SDK (v2 — in development; v1 retired)"
+description = "120 reasoning operators for structured thinking — stdlib-only, tuple-native"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "Apache-2.0"}
@@ -30,5 +16,12 @@ test = [
   "pytest>=8.3.4",
 ]
 
-[tool.setuptools]
-packages = []
+[project.scripts]
+base120 = "base120.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["base120*"]
+
+[tool.setuptools.package-data]
+base120 = ["data/*.json"]
