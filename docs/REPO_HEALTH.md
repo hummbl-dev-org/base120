@@ -5,20 +5,21 @@
 - **Repository**: `hummbl-dev/base120`
 - **Canonical URL**: `https://github.com/hummbl-dev/base120`
 - **Owner**: HUMMBL Team
-- **Stewardship scope**: Canonical Base120 registry, validation corpus, governance specs, and v1 reference artifacts.
+- **Stewardship scope**: Canonical Base120 registry, corpus contract documentation, governance specs, and v1 reference artifacts.
 
 ## Lifecycle
 
 - **Status**: Active public repository with the Python v1 package retired.
 - **Default branch**: `main`.
 - **Release posture**: v1 Python runtime code has been removed. Registry, corpus, governance, documentation, and CI hardening changes may continue through pull requests.
-- **Archive trigger**: Archive only if the canonical Base120 registry and validation corpus move to another declared source of truth.
+- **Archive trigger**: Archive only if the canonical Base120 registry and corpus contract move to another declared source of truth.
 
 ## Source Of Truth
 
 - `Base120_Canonical_Model_Registry.yaml` is the canonical model registry.
 - `registries/` contains registry data files that mirror or support the canonical model set.
-- `tests/corpus/` is the golden validation corpus for implementations and mirrors.
+- `docs/corpus-contract.md` and `mirrors/CONFORMANCE_CONTRACT.md` document the intended corpus contract for implementations and mirrors.
+- `tests/corpus/` is referenced by existing governance and mirror documentation, but it is not present in the current tree. Treat restoration or relocation of the executable corpus as an operational gap, not current source of truth.
 - `GOVERNANCE.md` and `docs/governance-decision-tree.md` define change classes and review expectations.
 - `docs/contract-units.md` defines contract unit structure and examples.
 
@@ -37,7 +38,7 @@ Expected CI coverage:
 
 - `.github/workflows/ci.yml` runs tests on Python 3.11 and 3.12.
 - `.github/workflows/base120.yml` runs mirror-guard checks and tests on Python 3.13.
-- `.github/workflows/guardrails.yml` runs corpus validation on Python 3.13.
+- `.github/workflows/guardrails.yml` runs guardrail validation on Python 3.13.
 - `.github/workflows/mirror-conformance.yml` is a reusable mirror-conformance workflow for downstream implementations.
 
 ## Branch Protection Expectation
@@ -53,6 +54,7 @@ Expected CI coverage:
 
 - GitHub branch protection is tracked centrally in `hummbl-dev/hummbl-dev#18`; do not overclaim required checks until that audit is updated.
 - The Python v1 package is retired, so validation should focus on registry, corpus, and mirror-conformance integrity rather than runtime feature growth.
+- `tests/corpus/` is referenced by governance and mirror-conformance docs but absent from the current tree; restore or relocate the executable corpus before treating it as validation source of truth.
 
 ## Fleet Scan Classification
 
@@ -60,6 +62,6 @@ Future fleet scans can classify this repository as:
 
 - **Lifecycle**: active, v1 runtime retired
 - **Visibility**: public
-- **Primary function**: canonical Base120 registry and validation corpus
+- **Primary function**: canonical Base120 registry and corpus contract documentation; executable corpus restoration pending
 - **Validation entrypoint**: `pytest`
 - **Primary metadata owner**: HUMMBL Team
