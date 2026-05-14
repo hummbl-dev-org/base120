@@ -27,7 +27,12 @@ A mirror implementation is **conformant** if and only if:
 
 The golden corpus resides in the canonical repository at:
 - `tests/corpus/valid/*.json` → MUST produce empty error list `[]`
-- `tests/corpus/invalid/*.json` → MUST produce error list matching `tests/corpus/expected/*.errs.json`
+- `tests/corpus/invalid/*.json` → MUST produce error list matching
+  `tests/corpus/expected/*.errs.json`
+
+The canonical repository CI validates this path with `tests/test_corpus_contract.py`
+so missing directories, malformed JSON, missing expected-error manifests, and orphaned
+expected-error manifests fail before mirror certification depends on them.
 
 ### Corpus Structure
 
