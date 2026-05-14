@@ -100,6 +100,8 @@ This repository is the **authoritative reference implementation** for Base120 v1
 
 Full governance spec: [GOVERNANCE.md](GOVERNANCE.md) | [Decision tree](docs/governance-decision-tree.md)
 
+Repository health contract: [docs/REPO_HEALTH.md](docs/REPO_HEALTH.md)
+
 ## HUMMBL Ecosystem
 
 Part of the [HUMMBL](https://github.com/hummbl-dev) cognitive AI architecture:
