@@ -1,15 +1,21 @@
 # Base120
 
-> **v1 Python package RETIRED (2026-04-14).** The Python code has been removed.
-> The canonical registry (`Base120_Canonical_Model_Registry.yaml`) and data files
-> (`registries/`) remain here as source of truth. The v2 SDK is in development.
+> **v1 Python validator RETIRED (2026-04-14).** The original v1 validator
+> code is no longer the active surface. The canonical registry
+> (`Base120_Canonical_Model_Registry.yaml`) and data files (`registries/`)
+> remain here as source of truth.
+>
+> **v2 Python SDK is active (scaffolding in `base120/`):** `cli.py`, `engine.py`,
+> `models.py`, `ledger.py`, `mcp_server.py`. Version line `2.0.0.dev0` per
+> `pyproject.toml`. See `GOVERNANCE.md` for the contract authority and change
+> taxonomy that govern this SDK.
 >
 > **FM taxonomy (FM1–FM30) migrated to:**
-> [`hummbl-governance`](https://github.com/hummbl-research/hummbl-governance) v0.4.0
+> [`hummbl-governance`](https://github.com/hummbl-dev/hummbl-governance)
 > — `from hummbl_governance.errors import FailureMode, HummblError`
 >
 > **MCP server (TypeScript, live):**
-> [`mcp-server`](https://github.com/hummbl-research/mcp-server) — all 120 operators served via MCP
+> [`mcp-server`](https://github.com/hummbl-dev/mcp-server) — all 120 operators served via MCP
 
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-blue)](LICENSE)
 
