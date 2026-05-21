@@ -119,3 +119,7 @@ Apache 2.0 -- see [LICENSE](LICENSE).
 ---
 
 Built by [HUMMBL LLC](https://hummbl.io). Base120 powers the cognitive layer behind multi-agent coordination at scale.
+
+## Repository Health
+
+See [docs/REPO_HEALTH.md](docs/REPO_HEALTH.md) for validation and branch-protection expectations.
