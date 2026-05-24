@@ -1,5 +1,11 @@
 # Base120 Contract Units
 
+> **Status (2026-05-24): archived v1 validator contract.** The current
+> `base120` v2 SDK does not implement the `base120 validate-contract` command.
+> The CLI examples below document the retired validator surface and must not be
+> treated as current package behavior unless validator support is reintroduced
+> with tests.
+
 ## Overview
 
 Contract units are the **core governance artifacts** in Base120. They serve as **executable specifications** that define:
@@ -24,6 +30,9 @@ Contract units are **independent governance artifacts** but MUST align with Base
 ---
 
 ## CLI Usage
+
+This section is historical. For current SDK commands, use `base120 list`,
+`base120 get`, `base120 prompt`, and `base120 families`.
 
 ### Installation
 

@@ -1,15 +1,19 @@
 # Base120
 
-> **v1 Python package RETIRED (2026-04-14).** The Python code has been removed.
-> The canonical registry (`Base120_Canonical_Model_Registry.yaml`) and data files
-> (`registries/`) remain here as source of truth. The v2 SDK is in development.
+> **Lifecycle note (2026-05-24).** The original v1 validator runtime was
+> retired on 2026-04-14. This repository now contains the active stdlib-only
+> Python v2 SDK (`base120` 2.0.0.dev0) for operator lookup, prompting, MCP
+> serving, and VERUM-aligned ledger records.
+> The canonical v1 registry (`Base120_Canonical_Model_Registry.yaml`) and data
+> files (`registries/`) remain here as source of truth.
 >
 > **FM taxonomy (FM1–FM30) migrated to:**
-> [`hummbl-governance`](https://github.com/hummbl-research/hummbl-governance) v0.4.0
+> [`hummbl-governance`](https://github.com/hummbl-research/hummbl-governance)
 > — `from hummbl_governance.errors import FailureMode, HummblError`
 >
-> **MCP server (TypeScript, live):**
-> [`mcp-server`](https://github.com/hummbl-research/mcp-server) — all 120 operators served via MCP
+> **MCP server:** use the Python `base120-mcp` entry point from this package,
+> or the external [`mcp-server`](https://github.com/hummbl-research/mcp-server)
+> mirror when a TypeScript server is required.
 
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-blue)](LICENSE)
 
@@ -17,73 +21,98 @@
 
 ## Quick Example
 
-Apply a model to decompose a problem:
+Apply an operator, generate a prompt, and persist a governance-readable record:
 
 ```python
-from base120.validators.validate import validate_artifact
+from base120 import Engine, Ledger
 
-# FM42: Separation of Concerns -- does this component have a single responsibility?
-artifact = {
-    "id": "auth-service-review",
-    "domain": "core",
-    "class": "architecture",
-    "instance": "auth-svc",
-    "models": ["FM42"]    # Separation of Concerns
-}
-errors = validate_artifact(artifact, schema, mappings, err_registry)
-# [] -- valid artifact, model applies cleanly
+engine = Engine()
+
+operator = engine.get("P6")
+print(operator.name)  # Point-of-View Anchoring
+
+prompt = engine.prompt("P6", "How should we price the certification tier?")
+result = engine.record(
+    "P6",
+    "How should we price the certification tier?",
+    "Anchor the offer to the compliance officer's risk budget.",
+    0.85,
+)
+
+ledger = Ledger("base120-ledger.jsonl")
+ledger.append(result.to_tuple())
 ```
 
-Each of the 120 models is a named, versioned reasoning primitive with a defined domain, failure graph, and validation rules.
+Each of the 120 operators is a named, versioned reasoning primitive with a
+defined transformation family and deterministic package representation.
 
 ## Features
 
-- **120 mental models** across 6 cognitive domains (core, systems, security, governance, operations, meta)
-- **6 cognitive transformations** -- deterministic operations that compose models into chains
-- **CLI validation** -- `base120 validate-contract` checks governance artifacts against the frozen spec
-- **Observability layer** -- opt-in structured JSON events for production monitoring
-- **MCP integration** -- serve models to AI agents via [mcp-server](https://github.com/hummbl-dev/mcp-server)
-- **Golden corpus** -- all implementations must match the canonical test corpus in `tests/corpus`
+- **120 reasoning operators** across 6 transformation families
+- **Stdlib-only Python SDK** -- no third-party runtime dependencies
+- **CLI tooling** -- `base120 list`, `base120 get`, `base120 prompt`, and `base120 families`
+- **Append-only ledger** -- persist operator applications as VERUM-aligned JSONL tuples
+- **MCP integration** -- serve operators to AI agents with the `base120-mcp` entry point
+- **Canonical registry and corpus docs** -- frozen v1 reference artifacts remain in-tree
 
-## Install
+## Install From Source
 
 ```bash
-pip install base120
-
-# Or from source
 git clone https://github.com/hummbl-dev/base120.git && cd base120
 pip install -e ".[test]"
 ```
 
+The package name is `base120`, but this repository should not claim PyPI
+availability until a published package exists.
+
 ## CLI
 
 ```bash
-# Validate a contract unit (schema, failure graph, version metadata)
-base120 validate-contract path/to/contract.json
+# List all operators
+base120 list
+
+# Inspect one operator
+base120 get P6
+
+# Generate an operator-specific prompt for a problem
+base120 prompt P6 "How should we price the certification tier?"
+
+# List canonical operator families
+base120 families
 ```
 
-See [`docs/contract-units.md`](docs/contract-units.md) for contract unit format and examples.
+The historical contract-unit validator spec is archived in
+[`docs/contract-units.md`](docs/contract-units.md); the current v2 SDK does not
+ship `base120 validate-contract`.
 
-## Observability
+## Ledger
 
-Opt-in structured events for production deployments:
+Persist operator applications as JSONL tuples:
 
 ```python
-from base120.observability import create_event_sink
+from base120 import Engine, Ledger
 
-event_sink = create_event_sink()  # logs to stdout
-errors = validate_artifact(artifact, schema, mappings, err_registry,
-                          event_sink=event_sink)
-# Emits: {"event_type": "validator_result", "result": "success", ...}
+engine = Engine()
+result = engine.record("DE1", "Reduce release risk.", "Split blockers by owner.", 0.9)
+
+ledger = Ledger()
+ledger.append(result.to_tuple())
+high_drift = ledger.cut(0.5)
 ```
 
-Omitting `event_sink` preserves original v1.0.0 behavior with zero overhead. Full spec: [`docs/observability.md`](docs/observability.md).
+The archived v1 validator observability contract remains in
+[`docs/observability.md`](docs/observability.md), but the current v2 SDK does
+not expose `base120.observability`.
 
 ## Authority Statement
 
-This repository is the **authoritative reference implementation** for Base120 v1.0.0. All other language implementations are semantic mirrors and MUST conform exactly to the outputs defined here.
+This repository is the **authoritative source** for the Base120 v1 registry,
+reference artifacts, and current Python v2 SDK. Other language
+implementations should conform to the frozen registry and corpus artifacts
+defined here. The `2.0.0.dev0` Python SDK API remains pre-release until a
+non-dev package version is published.
 
-### v1.0.x Policy
+### v1 Artifact Policy
 
 - **Permitted:** Security fixes, CI hardening, documentation, corpus additions
 - **Prohibited:** Schema changes, registry modifications, breaking changes
