@@ -8,11 +8,11 @@
 > files (`registries/`) remain here as source of truth.
 >
 > **FM taxonomy (FM1–FM30) migrated to:**
-> [`hummbl-governance`](https://github.com/hummbl-research/hummbl-governance)
+> [`hummbl-governance`](https://github.com/hummbl-dev/hummbl-governance)
 > — `from hummbl_governance.errors import FailureMode, HummblError`
 >
 > **MCP server:** use the Python `base120-mcp` entry point from this package,
-> or the external [`mcp-server`](https://github.com/hummbl-research/mcp-server)
+> or the external [`mcp-server`](https://github.com/hummbl-dev/mcp-server)
 > mirror when a TypeScript server is required.
 
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-blue)](LICENSE)
