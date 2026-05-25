@@ -1,5 +1,11 @@
 # Base120 Contract Units
 
+> **Status (2026-05-24): archived v1 validator contract.** The current
+> `base120` v2 SDK does not implement the `base120 validate-contract` command.
+> The CLI examples below document the retired validator surface and must not be
+> treated as current package behavior unless validator support is reintroduced
+> with tests.
+
 ## Overview
 
 Contract units are the **core governance artifacts** in Base120. They serve as **executable specifications** that define:
@@ -25,12 +31,19 @@ Contract units are **independent governance artifacts** but MUST align with Base
 
 ## CLI Usage
 
-### Installation
+This section is historical. For current SDK commands, use `base120 list`,
+`base120 get`, `base120 prompt`, and `base120 families`.
 
-Install Base120 with pip:
+### Historical Installation
+
+The retired validator was once installed as a package. Do not use this snippet
+as current release guidance; the active v2 SDK is installed from this source
+tree until a package is published.
 
 ```bash
-pip install base120
+git clone https://github.com/hummbl-dev/base120.git
+cd base120
+python -m pip install -e ".[test]"
 ```
 
 ### Validating a Contract Unit
@@ -339,8 +352,8 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
-      - name: Install Base120
-        run: pip install base120
+      - name: Install Base120 from source
+        run: python -m pip install -e ".[test]"
       - name: Validate Contract
         run: base120 validate-contract contracts/service-contract.json
 ```

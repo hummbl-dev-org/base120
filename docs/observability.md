@@ -1,8 +1,13 @@
 # Base120 Observability Contract
 
-**Version:** v1.0.0  
-**Status:** Governance-guaranteed (Indicated work)  
+**Version:** v1.0.0
+**Status:** Archived v1 validator contract
 **Failure Mode Addressed:** FM19 (Observability Failure)
+
+> **Current SDK note (2026-05-24):** the `base120` v2 SDK does not expose
+> `base120.validators` or `base120.observability`. This document preserves the
+> retired v1 validator observability contract; it is not a current package API
+> promise.
 
 ---
 
