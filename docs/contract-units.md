@@ -34,12 +34,16 @@ Contract units are **independent governance artifacts** but MUST align with Base
 This section is historical. For current SDK commands, use `base120 list`,
 `base120 get`, `base120 prompt`, and `base120 families`.
 
-### Installation
+### Historical Installation
 
-Install Base120 with pip:
+The retired validator was once installed as a package. Do not use this snippet
+as current release guidance; the active v2 SDK is installed from this source
+tree until a package is published.
 
 ```bash
-pip install base120
+git clone https://github.com/hummbl-dev/base120.git
+cd base120
+python -m pip install -e ".[test]"
 ```
 
 ### Validating a Contract Unit
@@ -348,8 +352,8 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
-      - name: Install Base120
-        run: pip install base120
+      - name: Install Base120 from source
+        run: python -m pip install -e ".[test]"
       - name: Validate Contract
         run: base120 validate-contract contracts/service-contract.json
 ```

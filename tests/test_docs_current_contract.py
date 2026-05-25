@@ -57,6 +57,17 @@ def test_archived_validator_docs_are_marked_as_archived() -> None:
         assert "v2 sdk does not" in lower_text
 
 
+def test_current_docs_do_not_claim_pypi_install() -> None:
+    docs_to_check = [
+        "README.md",
+        "docs/contract-units.md",
+        "docs/observability.md",
+    ]
+
+    for relative in docs_to_check:
+        assert "pip install base120" not in _read(relative)
+
+
 def test_documented_sdk_version_matches_package_metadata() -> None:
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     version = pyproject["project"]["version"]
