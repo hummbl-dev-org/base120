@@ -49,7 +49,7 @@ from base120.engine import Engine, FAMILIES, FAMILY_NAMES
 from base120.ledger import Ledger
 from base120.models import ApplyResult, Operator, OperatorTuple
 
-__version__ = "2.0.0.dev0"
+__version__ = "2.0.0"
 
 __all__ = [
     "__version__",
