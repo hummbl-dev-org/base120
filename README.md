@@ -23,6 +23,8 @@
 
 **120 named mental models for structured reasoning.** Use them to analyze problems, design systems, and make decisions — whether you are a human, an AI agent, or a fleet of both.
 
+Learn more at [hummbl.io](https://hummbl.io).
+
 ---
 
 ## Base120 in 5 Minutes
@@ -237,6 +239,8 @@ Part of the [HUMMBL](https://github.com/hummbl-dev) cognitive AI architecture:
 - [mcp-server](https://github.com/hummbl-dev/mcp-server) -- Serve Base120 models to Claude and other AI agents
 - [hummbl-governance](https://github.com/hummbl-dev/hummbl-governance) -- Governance runtime (kill switch, circuit breaker, cost governor)
 - [arbiter](https://github.com/hummbl-dev/arbiter) -- Agent-aware code quality scoring and attribution
+- [hummbl-agent](https://github.com/hummbl-dev/hummbl-agent) -- Governed control plane for AI agent systems
+- [hummbl-bibliography](https://github.com/hummbl-dev/hummbl-bibliography) -- Bibliography for the HUMMBL cognitive framework
 - [founder-mode-showcase](https://github.com/hummbl-dev/founder-mode-showcase) -- 5-minute demo of the full HUMMBL mesh
 
 Learn more at [hummbl.io](https://hummbl.io).
