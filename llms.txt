@@ -1,0 +1,274 @@
+# Base120 — llms.txt
+# AI-readable index of the Base120 mental model library.
+# 120 named mental models for structured reasoning across 6 cognitive domains. Last updated: 2026-06-14.
+#
+# Query API: LLMs can parse this file to understand reasoning operators
+# Installation: pip install base120
+# Documentation: https://github.com/hummbl-dev/base120
+#
+# Base120 categories:
+#   BASE120:PERSPECTIVE Viewpoints, framing, empathy (P1–P18)
+#   BASE120:INVERSION Counterfactuals, negation, proof by contradiction (IN1–IN18)
+#   BASE120:COMPOSITION Building, combining, layering (CO1–CO20)
+#   BASE120:DECOMPOSITION Breaking down, isolating, factoring (DE1–DE20)
+#   BASE120:RECURSION Self-reference, iteration, meta-reasoning (RE1–RE20)
+#   BASE120:SYSTEMS Dynamics, emergence, control (SY1–SY24)
+#   BASE120:SDK Python stdlib-only SDK for operator lookup and prompting
+#   BASE120:MCP MCP server integration for AI agents
+#   BASE120:LEDGER Append-only VERUM-aligned JSONL records
+
+## The 6 Cognitive Domains
+
+### Perspective (P) — P1–P18
+Focus: Viewpoints, framing, empathy, context
+- P1 First Principles Framing
+- P2 Stakeholder Mapping
+- P3 Identity Stack
+- P4 Lens Shifting
+- P5 Empathy Mapping
+- P6 Point-of-View Anchoring
+- P7 Perspective Switching
+- P8 Narrative Framing
+- P9 Cultural Lens Shifting
+- P10 Context Windowing
+- P11 Role Perspective-Taking
+- P12 Temporal Framing
+- P13 Spatial Framing
+- P14 Reference Class Framing
+- P15 Assumption Surfacing
+- P16 Identity-Context Reciprocity
+- P17 Frame Control & Reframing
+- P18 Horizon Scanning
+
+### Inversion (IN) — IN1–IN18
+Focus: Counterfactuals, negation, proof by contradiction
+- IN1 Reductio ad Absurdum
+- IN2 Proof by Contradiction
+- IN3 Negation Testing
+- IN4 Counterfactual Reasoning
+- IN5 Worst-Case Analysis
+- IN6 Pre-Mortem
+- IN7 Regret Minimization
+- IN8 Inversion Principle
+- IN9 Constraint Relaxation
+- IN10 Opposite Thinking
+- IN11 Devil's Advocate
+- IN12 Second-Order Negation
+- IN13 Assumption Violation
+- IN14 Boundary Stressing
+- IN15 Failure Mode Enumeration
+- IN16 Adversarial Generation
+- IN17 Exclusion Analysis
+- IN18 Complement Thinking
+
+### Composition (CO) — CO1–CO20
+Focus: Building, combining, layering
+- CO1 Modularity
+- CO2 Abstraction
+- CO3 Encapsulation
+- CO4 Interface Design
+- CO5 Protocol Layering
+- CO6 Dependency Injection
+- CO7 Pipeline Construction
+- CO8 Orchestration
+- CO9 Service Composition
+- CO10 Microservice Decomposition
+- CO11 Event-Driven Architecture
+- CO12 API Gateway Pattern
+- CO13 Federation
+- CO14 Polyglot Persistence
+- CO15 CQRS
+- CO16 Event Sourcing
+- CO17 Saga Pattern
+- CO18 Strangler Fig Pattern
+- CO19 Sidecar Pattern
+- CO20 Ambassador Pattern
+
+### Decomposition (DE) — DE1–DE20
+Focus: Breaking down, isolating, factoring
+- DE1 Root Cause Analysis
+- DE2 Five Whys
+- DE3 Fault Tree Analysis
+- DE4 Fishbone Diagram
+- DE5 Separation of Concerns
+- DE6 Dimensional Reduction
+- DE7 Factor Analysis
+- DE8 Principal Component Analysis
+- DE9 Feature Extraction
+- DE10 Domain-Driven Design
+- DE11 Bounded Context
+- DE12 Aggregate Decomposition
+- DE13 Entity-Relationship Modeling
+- DE14 Normalization
+- DE15 Refactoring
+- DE16 Extract Method
+- DE17 Decompose Conditional
+- DE18 Replace Inheritance
+- DE19 Split Phase
+- DE20 Replace Algorithm
+
+### Recursion (RE) — RE1–RE20
+Focus: Self-reference, iteration, meta-reasoning
+- RE1 Feedback Loop
+- RE2 Recursion
+- RE3 Iteration
+- RE4 Self-Reference
+- RE5 Meta-Reasoning
+- RE6 Reflection
+- RE7 Introspection
+- RE8 Bootstrapping
+- RE9 Self-Modification
+- RE10 Auto-Tuning
+- RE11 Meta-Learning
+- RE12 Transfer Learning
+- RE13 Curriculum Learning
+- RE14 Active Learning
+- RE15 Reinforcement Learning
+- RE16 Q-Learning
+- RE17 Policy Gradient
+- RE18 Actor-Critic
+- RE19 Multi-Agent Reinforcement
+- RE20 Hierarchical Reinforcement
+
+### Systems (SY) — SY1–SY24
+Focus: Dynamics, emergence, control
+- SY1 Causal Loop Diagrams
+- SY2 Stock and Flow
+- SY3 Feedback Loops
+- SY4 Delays
+- SY5 Oscillation
+- SY6 Reinforcing Feedback
+- SY7 Balancing Feedback
+- SY8 Leverage Points
+- SY9 System Archetypes
+- SY10 Emergence
+- SY11 Self-Organization
+- SY12 Homeostasis
+- SY13 Resilience Engineering
+- SY14 Adaptation
+- SY15 Evolution
+- SY16 Coevolution
+- SY17 Network Effects
+- SY18 Phase Transitions
+- SY19 Criticality
+- SY20 Tipping Points
+- SY21 Bifurcation
+- SY22 Chaos
+- SY23 Complexity
+- SY24 Antifragility
+
+## Python SDK Usage
+
+### Lookup Operator
+```python
+from base120 import Engine
+
+engine = Engine()
+operator = engine.get("P6")
+print(operator.name)  # Point-of-View Anchoring
+```
+
+### Generate Prompt
+```python
+prompt = engine.prompt("P6", "How should we price the certification tier?")
+print(prompt)
+```
+
+### Record to Ledger
+```python
+from base120 import Engine, Ledger
+
+engine = Engine()
+result = engine.record(
+    "P6",
+    "How should we price the certification tier?",
+    "Anchor the offer to the compliance officer's risk budget.",
+    0.85,
+)
+
+ledger = Ledger("base120-ledger.jsonl")
+ledger.append(result.to_tuple())
+```
+
+## CLI Commands
+
+```bash
+# List all operators
+base120 list
+
+# Get specific operator
+base120 get P6
+
+# Generate prompt
+base120 prompt P6 "How should we price the certification tier?"
+
+# List transformation families
+base120 families
+```
+
+## MCP Integration
+
+Serve operators to AI agents via MCP:
+
+```bash
+base120-mcp
+```
+
+Exposes 120 operators as JSON-RPC tools with:
+- Operator lookup by ID
+- Prompt generation
+- Ledger recording
+- Family enumeration
+
+## Canonical Registry
+
+The canonical registry is in `Base120_Canonical_Model_Registry.yaml`:
+- 120 models with IDs, names, descriptions
+- Transformation family mappings
+- Versioned schema
+- Language-agnostic (YAML format)
+
+## Example: Structured Decision-Making
+
+**Problem**: "Should we migrate from REST to GraphQL?"
+
+```
+Step 1 — P1 (First Principles):
+  What are the irreducible requirements? Latency, cacheability, client flexibility.
+
+Step 2 — IN5 (Worst-Case Analysis):
+  What if the migration takes 6 months and breaks mobile clients?
+
+Step 3 — DE5 (Separation of Concerns):
+  Which parts of the API actually need flexibility? Read paths vs write paths.
+
+Step 4 — CO1 (Modularity):
+  Can we support both during transition? BFF pattern, not big-bang.
+
+Step 5 — SY13 (Feedback Loops):
+  How do we know it's working? Metrics: latency p99, error rate, client adoption.
+```
+
+## Installation
+
+```bash
+pip install base120
+```
+
+Or from source:
+```bash
+git clone https://github.com/hummbl-dev/base120.git
+cd base120
+pip install -e .
+```
+
+## License
+
+Apache 2.0
+
+## Links
+
+- GitHub: https://github.com/hummbl-dev/base120
+- PyPI: https://pypi.org/project/base120/
+- Documentation: https://github.com/hummbl-dev/base120/blob/main/README.md
+- Issues: https://github.com/hummbl-dev/base120/issues
