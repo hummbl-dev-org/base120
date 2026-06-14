@@ -17,6 +17,9 @@
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache_2.0-blue)](LICENSE)
 [![Models](https://img.shields.io/badge/models-120-brightgreen)]()
 [![Domains](https://img.shields.io/badge/domains-6-blue)]()
+[![CI](https://github.com/hummbl-dev/base120/actions/workflows/ci.yml/badge.svg)](https://github.com/hummbl-dev/base120/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
+[![Last commit](https://img.shields.io/github/last-commit/hummbl-dev/base120/main)](https://github.com/hummbl-dev/base120/commits/main)
 
 **120 named mental models for structured reasoning.** Use them to analyze problems, design systems, and make decisions — whether you are a human, an AI agent, or a fleet of both.
 
