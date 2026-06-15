@@ -18,6 +18,8 @@
 [![Models](https://img.shields.io/badge/models-120-brightgreen)]()
 [![Domains](https://img.shields.io/badge/domains-6-blue)]()
 [![CI](https://github.com/hummbl-dev/base120/actions/workflows/ci.yml/badge.svg)](https://github.com/hummbl-dev/base120/actions/workflows/ci.yml)
+[![Arbiter Score](https://img.shields.io/badge/Arbiter-99.4%20A-brightgreen)](https://github.com/hummbl-dev/arbiter)
+[![Complexity](https://img.shields.io/badge/Complexity-98.3%20A-brightgreen)](https://github.com/hummbl-dev/arbiter)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
 [![Last commit](https://img.shields.io/github/last-commit/hummbl-dev/base120/main)](https://github.com/hummbl-dev/base120/commits/main)
 
