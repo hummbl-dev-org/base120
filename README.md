@@ -18,6 +18,8 @@
 [![Models](https://img.shields.io/badge/models-120-brightgreen)]()
 [![Domains](https://img.shields.io/badge/domains-6-blue)]()
 [![CI](https://github.com/hummbl-dev/base120/actions/workflows/ci.yml/badge.svg)](https://github.com/hummbl-dev/base120/actions/workflows/ci.yml)
+[![Arbiter Score](https://img.shields.io/badge/Arbiter-99.4%20A-brightgreen)](https://github.com/hummbl-dev/arbiter)
+[![Complexity](https://img.shields.io/badge/Complexity-98.3%20A-brightgreen)](https://github.com/hummbl-dev/arbiter)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/downloads/)
 [![Last commit](https://img.shields.io/github/last-commit/hummbl-dev/base120/main)](https://github.com/hummbl-dev/base120/commits/main)
 
@@ -151,10 +153,12 @@ DE1 Root Cause Analysis | DE2 Five Whys | DE3 Fault Tree Analysis | DE4 Fishbone
 ### Domain RE — Recursion (RE1–RE20)
 RE1 Feedback Loop | RE2 Recursion | RE3 Iteration | RE4 Self-Reference | RE5 Meta-Reasoning | RE6 Reflection | RE7 Introspection | RE8 Bootstrapping | RE9 Self-Modification | RE10 Auto-Tuning | RE11 Meta-Learning | RE12 Transfer Learning | RE13 Curriculum Learning | RE14 Active Learning | RE15 Reinforcement Learning | RE16 Q-Learning | RE17 Policy Gradient | RE18 Actor-Critic | RE19 Multi-Agent Reinforcement | RE20 Hierarchical Reinforcement
 
-### Domain SY — Systems (SY1–SY24)
-SY1 Causal Loop Diagrams | SY2 Stock and Flow | SY3 Systems Archetypes | SY4 Leverage Points | SY5 Tragedy of the Commons | SY6 Fixes That Fail | SY7 Shifting the Burden | SY8 Eroding Goals | SY9 Escalation | SY10 Success to the Successful | SY11 Limits to Growth | SY12 Balancing Feedback | SY13 Reinforcing Feedback | SY14 Homeostasis | SY15 Resilience | SY16 Antifragility | SY17 Optionality | SY18 Redundancy | SY19 Diversity | SY20 Modularity | SY21 Scalability | SY22 Evolvability | SY23 Adaptability | SY24 Robustness
+### Domain SY — Systems (SY1–SY20)
+SY1 Causal Loop Diagrams | SY2 Stock and Flow | SY3 Systems Archetypes | SY4 Leverage Points | SY5 Tragedy of the Commons | SY6 Fixes That Fail | SY7 Shifting the Burden | SY8 Eroding Goals | SY9 Escalation | SY10 Success to the Successful | SY11 Limits to Growth | SY12 Balancing Feedback | SY13 Reinforcing Feedback | SY14 Homeostasis | SY15 Resilience | SY16 Antifragility | SY17 Optionality | SY18 Redundancy | SY19 Diversity | SY20 Modularity
 
 </details>
+
+> **Migration notice (2026-06-16)**: Base120 canon reduced from SY1–SY24 to **SY1–SY20**. SY21 (Scalability), SY22 (Evolvability), SY23 (Adaptability), and SY24 (Robustness) have been moved to the proposed/assessment queue. See `docs/base120_systems_canon_migration.md` in the whether-book repo for the full migration receipt.
 
 ## Install From Source
 
