@@ -25,5 +25,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[test]"
 
+      - name: Check for accidentally tracked Python cache
+        run: |
+          CACHED=$(git ls-files | grep -E '__pycache__|\.pyc$|\.pyo$' || true)
+          if [ -n "$CACHED" ]; then
+            echo "ERROR: Python cache files found in git index:"
+            echo "$CACHED"
+            echo "Run: git rm -r --cached __pycache__ && git rm --cached '*.pyc' '*.pyo'"
+            exit 1
+          fi
+          echo "OK: No Python cache files in git index"
+
       - name: Run tests
         run: python -m pytest tests/ -v
