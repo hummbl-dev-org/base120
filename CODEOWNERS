@@ -1,0 +1,21 @@
+# CODEOWNERS — hummbl-dev/base120
+# Review authority per path. Steward approval required for normative spec files.
+
+# Governance artifacts
+CONSTITUTION.md          @reubenbowlby
+KRINEIA.md               @reubenbowlby
+hummbl.repo.yaml         @reubenbowlby
+CODEOWNERS               @reubenbowlby
+
+# Receipts — steward only
+_receipts/               @reubenbowlby
+
+# Normative files
+Base120_Canonical_Model_Registry.yaml    @reubenbowlby
+registries/                              @reubenbowlby
+schemas/                                 @reubenbowlby
+tests/corpus/                            @reubenbowlby
+AGENTS.md                                @reubenbowlby
+
+# Default: steward
+*                        @reubenbowlby
