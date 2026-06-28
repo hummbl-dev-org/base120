@@ -40,7 +40,7 @@ def test_readme_advertises_current_sdk_surface() -> None:
     assert "base120 get P6" in readme
     assert "base120 prompt P6" in readme
     assert "base120 families" in readme
-    assert "should not claim PyPI availability" in flat_readme
+    assert "source installation only until a package distribution exists" in flat_readme
 
 
 def test_archived_validator_docs_are_marked_as_archived() -> None:
@@ -60,12 +60,28 @@ def test_archived_validator_docs_are_marked_as_archived() -> None:
 def test_current_docs_do_not_claim_pypi_install() -> None:
     docs_to_check = [
         "README.md",
+        "llms.txt",
         "docs/contract-units.md",
         "docs/observability.md",
     ]
 
     for relative in docs_to_check:
         assert "pip install base120" not in _read(relative)
+        assert "pypi.org/project/base120" not in _read(relative).lower()
+
+
+def test_public_package_identity_is_unambiguous() -> None:
+    readme = _read("README.md")
+    llms = _read("llms.txt")
+    receipt = _read("docs/PACKAGE_IDENTITY_RECEIPT.md")
+
+    assert 'name = "base120"' in _read("pyproject.toml")
+    assert "canonical package name is `base120`" in readme
+    assert "`hummbl-base120` is not the canonical package name" in _flat(readme)
+    assert "Package identity: base120" in llms
+    assert "PyPI status: unpublished" in llms
+    assert "canonical package name: `base120`" in receipt.lower()
+    assert "not canonical: `hummbl-base120`" in receipt.lower()
 
 
 def test_documented_sdk_version_matches_package_metadata() -> None:

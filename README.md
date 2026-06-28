@@ -167,8 +167,10 @@ git clone https://github.com/hummbl-dev/base120.git && cd base120
 pip install -e ".[test]"
 ```
 
-The package name is `base120`, but this repository should not claim PyPI
-availability until a published package exists.
+The canonical package name is `base120`; `hummbl-base120` is not the canonical
+package name. As of 2026-06-28, neither name is published on PyPI, so public
+docs should advertise source installation only until a package distribution
+exists. See [`docs/PACKAGE_IDENTITY_RECEIPT.md`](docs/PACKAGE_IDENTITY_RECEIPT.md).
 
 ## CLI
 
@@ -214,8 +216,8 @@ not expose `base120.observability`.
 This repository is the **authoritative source** for the Base120 v1 registry,
 reference artifacts, and current Python v2 SDK. Other language
 implementations should conform to the frozen registry and corpus artifacts
-defined here. The `2.0.0.dev0` Python SDK API remains pre-release until a
-non-dev package version is published.
+defined here. The `2.0.0` Python SDK API remains source-install only until a
+package distribution is published.
 
 ### v1 Artifact Policy
 

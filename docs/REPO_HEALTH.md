@@ -9,7 +9,7 @@
 
 ## Lifecycle
 
-- **Status**: Active public repository with frozen v1 registry/corpus artifacts and an active Python v2 SDK (`base120` 2.0.0.dev0).
+- **Status**: Active public repository with frozen v1 registry/corpus artifacts and an active Python v2 SDK (`base120` 2.0.0).
 - **Default branch**: `main`.
 - **Release posture**: The v1 validator runtime is retired. The current Python package exposes operator lookup, prompting, MCP serving, and VERUM-aligned ledger records; registry, corpus, governance, documentation, and CI hardening changes may continue through pull requests.
 - **Archive trigger**: Archive only if the canonical Base120 registry and corpus contract move to another declared source of truth.
@@ -55,7 +55,8 @@ Expected CI coverage:
 ## Known Operational Gaps
 
 - GitHub branch protection is tracked centrally in `hummbl-dev/hummbl-dev#18`; do not overclaim required checks until that audit is updated.
-- The Python v1 validator package is retired, while the v2 SDK is active pre-release. Keep README/API docs aligned with the actual `Engine`, `Ledger`, CLI, and MCP entry points.
+- The Python v1 validator package is retired, while the v2 SDK is active as a source-install package. Keep README/API docs aligned with the actual `Engine`, `Ledger`, CLI, and MCP entry points.
+- PyPI publication is not yet available for `base120` or `hummbl-base120`; keep public install instructions source-install only until a package distribution exists.
 - `docs/contract-units.md` and `docs/observability.md` are archived v1 validator contracts, not current v2 SDK API promises.
 - `tests/test_corpus_contract.py` validates that `tests/corpus/` exists, has valid/invalid JSON artifacts, and has expected-error manifests for every invalid artifact.
 

@@ -1,9 +1,11 @@
 # Base120 — llms.txt
 # AI-readable index of the Base120 mental model library.
-# 120 named mental models for structured reasoning across 6 cognitive domains. Last updated: 2026-06-14.
+# 120 named mental models for structured reasoning across 6 cognitive domains. Last updated: 2026-06-28.
 #
 # Query API: LLMs can parse this file to understand reasoning operators
-# Installation: pip install base120
+# Package identity: base120
+# PyPI status: unpublished
+# Installation: source install only; clone https://github.com/hummbl-dev/base120 and run python -m pip install -e .
 # Documentation: https://github.com/hummbl-dev/base120
 #
 # Base120 categories:
@@ -12,7 +14,7 @@
 #   BASE120:COMPOSITION Building, combining, layering (CO1–CO20)
 #   BASE120:DECOMPOSITION Breaking down, isolating, factoring (DE1–DE20)
 #   BASE120:RECURSION Self-reference, iteration, meta-reasoning (RE1–RE20)
-#   BASE120:SYSTEMS Dynamics, emergence, control (SY1–SY24)
+#   BASE120:SYSTEMS Dynamics, emergence, control (SY1–SY20)
 #   BASE120:SDK Python stdlib-only SDK for operator lookup and prompting
 #   BASE120:MCP MCP server integration for AI agents
 #   BASE120:LEDGER Append-only VERUM-aligned JSONL records
@@ -252,15 +254,12 @@ Step 5 — SY13 (Feedback Loops):
 ## Installation
 
 ```bash
-pip install base120
-```
-
-Or from source:
-```bash
 git clone https://github.com/hummbl-dev/base120.git
 cd base120
-pip install -e .
+python -m pip install -e .
 ```
+
+No PyPI package is currently published for `base120` or `hummbl-base120`.
 
 ## License
 
@@ -269,6 +268,6 @@ Apache 2.0
 ## Links
 
 - GitHub: https://github.com/hummbl-dev/base120
-- PyPI: https://pypi.org/project/base120/
+- Package identity receipt: https://github.com/hummbl-dev/base120/blob/main/docs/PACKAGE_IDENTITY_RECEIPT.md
 - Documentation: https://github.com/hummbl-dev/base120/blob/main/README.md
 - Issues: https://github.com/hummbl-dev/base120/issues
