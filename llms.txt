@@ -14,7 +14,7 @@
 #   BASE120:COMPOSITION Building, combining, layering (CO1–CO20)
 #   BASE120:DECOMPOSITION Breaking down, isolating, factoring (DE1–DE20)
 #   BASE120:RECURSION Self-reference, iteration, meta-reasoning (RE1–RE20)
-#   BASE120:SYSTEMS Dynamics, emergence, control (SY1–SY20)
+#   BASE120:SYSTEMS Dynamics, emergence, control (SY1–SY24)
 #   BASE120:SDK Python stdlib-only SDK for operator lookup and prompting
 #   BASE120:MCP MCP server integration for AI agents
 #   BASE120:LEDGER Append-only VERUM-aligned JSONL records

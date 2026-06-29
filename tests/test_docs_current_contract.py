@@ -65,9 +65,21 @@ def test_current_docs_do_not_claim_pypi_install() -> None:
         "docs/observability.md",
     ]
 
+    blocked_install_claims = [
+        "pip install base120",
+        "pip install hummbl-base120",
+    ]
+    blocked_pypi_urls = [
+        "pypi.org/project/base120",
+        "pypi.org/project/hummbl-base120",
+    ]
+
     for relative in docs_to_check:
-        assert "pip install base120" not in _read(relative)
-        assert "pypi.org/project/base120" not in _read(relative).lower()
+        text = _read(relative).lower()
+        for claim in blocked_install_claims:
+            assert claim not in text
+        for url in blocked_pypi_urls:
+            assert url not in text
 
 
 def test_public_package_identity_is_unambiguous() -> None:
