@@ -23,11 +23,11 @@ Welcome to the Base120 documentation site.
 
 ## Architecture
 
-- [HCI Architecture v1.1](v1.1-hci/ARCHITECTURE.md) - Human-computer interface architecture
+- [HCI Architecture v1.1](../v1.1-hci/ARCHITECTURE.md) - Human-computer interface architecture
 
 ## Examples
 
-- [Contracts](examples/contracts/README.md) - Contract examples
+- [Contracts](../examples/contracts/README.md) - Contract examples
 
 ---
 
