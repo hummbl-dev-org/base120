@@ -315,12 +315,11 @@ Corpus tests run 3 times in CI, hash-compared for byte-for-byte identity.
 ### Supporting Documents
 - [governance-migration.md](../docs/governance-migration.md) - How to adapt
 - [governance-decision-tree.md](../docs/governance-decision-tree.md) - Quick reference
-- [workflows/README.md](README.md) - Workflow architecture
 
 ### Related Work
 - [corpus-contract.md](../docs/corpus-contract.md) - Golden corpus rules
 - [spec-v1.0.0.md](../docs/spec-v1.0.0.md) - Base120 specification
-- [copilot-instructions.md](../copilot-instructions.md) - Agent guidelines
+- [copilot-instructions.md](../.github/copilot-instructions.md) - Agent guidelines
 
 ---
 
