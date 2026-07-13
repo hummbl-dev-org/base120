@@ -36,7 +36,7 @@ env:
 jobs:
   validate-mirror-conformance:
     name: Validate Mirror Conformance (${{ inputs.language }})
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, wsl, base120]
     
     steps:
       - name: Checkout mirror repository
