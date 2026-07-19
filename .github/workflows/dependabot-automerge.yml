@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Evaluate and squash-merge eligible PRs
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const DEPENDABOT_LOGIN = "dependabot[bot]";
@@ -129,6 +129,18 @@ jobs:
               if (humanChangesRequested) {
                 throw new Error("A human reviewer requested changes.");
               }
+              const hasIndependentApproval = reviews.some((review) => {
+                const login = review.user?.login?.toLowerCase() || "";
+                const automated = review.user?.type === "Bot" || login.endsWith("[bot]");
+                const isAuthor = login === pr.user?.login?.toLowerCase();
+                return !automated && !isAuthor && review.state === "APPROVED";
+              });
+              if (!hasIndependentApproval) {
+                throw new Error(
+                  "No independent (non-author, non-bot) APPROVED review found. " +
+                  "At least one non-author human approval is required before auto-merge."
+                );
+              }
             };
 
             const evaluate = async (pr) => {
@@ -197,7 +209,7 @@ jobs:
                   issue_number: pr.number,
                   body: [
                     "### Dependabot Auto-Merge",
-                    "Squash-merged after bot provenance, dependency-only paths, human-review state, and required GitHub Actions checks were verified.",
+                    "Squash-merged after bot provenance, dependency-only paths, human-review state, independent non-author approval, and required GitHub Actions checks were verified.",
                     "- Required checks: " + REQUIRED_CHECKS.join(", "),
                     "",
                   ].join("\n"),
