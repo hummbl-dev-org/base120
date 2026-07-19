@@ -11,7 +11,7 @@ on:
 
 jobs:
   corpus:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, wsl, base120]
     steps:
       - uses: actions/checkout@v6.0.3
       - uses: actions/setup-python@v6
