@@ -35,6 +35,9 @@ env:
 
 jobs:
   validate-mirror-conformance:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     name: Validate Mirror Conformance (${{ inputs.language }})
     runs-on: [self-hosted, Linux, X64, wsl, base120]
     
