@@ -40,12 +40,12 @@ jobs:
     
     steps:
       - name: Checkout mirror repository
-        uses: actions/checkout@v6.0.3
+        actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
         with:
           path: mirror-repo
       
       - name: Checkout canonical Base120 repository
-        uses: actions/checkout@v6.0.3
+        actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
         with:
           repository: hummbl-dev/base120
           ref: main
@@ -381,7 +381,7 @@ jobs:
       
       - name: Post PR comment with results
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v9
+        actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         with:
           script: |
             const passed = '${{ steps.summary.outputs.passed }}' === 'true';
