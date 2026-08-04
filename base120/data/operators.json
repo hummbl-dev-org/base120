@@ -21,7 +21,7 @@
     "code": "P4",
     "name": "Lens Shifting",
     "transformation": "P",
-    "definition": "Deliberately adopt different interpretive frameworks to reveal hidden aspects"
+    "definition": "Deliberately adopt different interpretive frameworks to reveal hidden aspects of a situation"
   },
   {
     "code": "P5",
@@ -105,7 +105,7 @@
     "code": "P18",
     "name": "Boundary Object Selection",
     "transformation": "P",
-    "definition": "Choose representations that bridge multiple perspectives while remaining meaningful"
+    "definition": "Choose representations that bridge multiple perspectives while remaining meaningful to each"
   },
   {
     "code": "P19",
@@ -165,7 +165,7 @@
     "code": "IN8",
     "name": "Contrapositive Reasoning",
     "transformation": "IN",
-    "definition": "Use logical equivalence that \"if A then B\" equals \"if not B then not A\""
+    "definition": "Use logical equivalence that if A then B equals if not B then not A"
   },
   {
     "code": "IN9",
@@ -181,7 +181,7 @@
   },
   {
     "code": "IN11",
-    "name": "Devil",
+    "name": "Devil's Advocate Protocol",
     "transformation": "IN",
     "definition": "Assign explicit role to argue against group consensus or preferred option"
   },
@@ -267,7 +267,7 @@
     "code": "CO5",
     "name": "Emergence",
     "transformation": "CO",
-    "definition": "Recognize higher-order behavior arising from component interactions"
+    "definition": "Recognize higher-order behavior arising from component interactions beyond individual properties"
   },
   {
     "code": "CO6",
@@ -345,7 +345,7 @@
     "code": "CO18",
     "name": "Knowledge Graphing",
     "transformation": "CO",
-    "definition": "Represent information as interconnected entities and relationships"
+    "definition": "Represent information as interconnected entities and relationships rather than isolated documents"
   },
   {
     "code": "CO19",
@@ -571,7 +571,7 @@
   },
   {
     "code": "RE16",
-    "name": "Retrospective\u2192Prospective Loop",
+    "name": "Retrospective -> Prospective Loop",
     "transformation": "RE",
     "definition": "Use systematic reflection on past to inform future planning"
   },
