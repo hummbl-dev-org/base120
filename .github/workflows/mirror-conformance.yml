@@ -55,10 +55,12 @@ jobs:
           path: canonical-base120
       
       - name: Display conformance contract version
+        env:
+          LANGUAGE: ${{ inputs.language }}
         run: |
           echo "📋 Base120 Mirror Conformance Validation"
           echo "========================================"
-          echo "Mirror Language: ${{ inputs.language }}"
+          echo "Mirror Language: ${LANGUAGE}"
           echo "Canonical Version: $(grep 'version =' canonical-base120/pyproject.toml | cut -d'"' -f2)"
           echo "Corpus Location: canonical-base120/tests/corpus"
           echo ""
@@ -66,16 +68,21 @@ jobs:
       - name: Setup mirror environment
         if: inputs.setup-command != ''
         working-directory: mirror-repo
-        run: ${{ inputs.setup-command }}
+        env:
+          SETUP_CMD: ${{ inputs.setup-command }}
+        run: |
+          bash -c "$SETUP_CMD"
       
       - name: Copy canonical corpus to mirror
+        env:
+          CORPUS_PATH: ${{ inputs.corpus-path }}
         run: |
           echo "Copying canonical corpus to mirror repository..."
-          mkdir -p mirror-repo/${{ inputs.corpus-path }}
-          cp -r canonical-base120/tests/corpus/* mirror-repo/${{ inputs.corpus-path }}/
+          mkdir -p "mirror-repo/${CORPUS_PATH}"
+          cp -r canonical-base120/tests/corpus/* "mirror-repo/${CORPUS_PATH}/"
           
           echo "Corpus files copied:"
-          find mirror-repo/${{ inputs.corpus-path }} -type f | wc -l
+          find "mirror-repo/${CORPUS_PATH}" -type f | wc -l
       
       - name: Validate corpus structure
         working-directory: mirror-repo/${{ inputs.corpus-path }}
@@ -110,6 +117,9 @@ jobs:
       - name: Run validation on valid corpus
         id: validate_valid
         working-directory: mirror-repo
+        env:
+          CORPUS_PATH: ${{ inputs.corpus-path }}
+          VALIDATE_CMD: ${{ inputs.validate-command }}
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "Validating VALID corpus artifacts"
@@ -120,7 +130,7 @@ jobs:
           FAIL_COUNT=0
           FAILURES=""
           
-          for artifact in ${{ inputs.corpus-path }}/valid/*.json; do
+          for artifact in "${CORPUS_PATH}"/valid/*.json; do
             if [ ! -f "$artifact" ]; then
               continue
             fi
@@ -128,7 +138,7 @@ jobs:
             basename=$(basename "$artifact")
             
             # Run validator and capture output
-            OUTPUT=$(${{ inputs.validate-command }} "$artifact" 2>&1) || {
+            OUTPUT=$($VALIDATE_CMD "$artifact" 2>&1) || {
               echo "❌ $basename - validator command failed"
               echo "   Output: $OUTPUT"
               FAIL_COUNT=$((FAIL_COUNT + 1))
@@ -170,6 +180,9 @@ jobs:
       - name: Run validation on invalid corpus
         id: validate_invalid
         working-directory: mirror-repo
+        env:
+          CORPUS_PATH: ${{ inputs.corpus-path }}
+          VALIDATE_CMD: ${{ inputs.validate-command }}
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "Validating INVALID corpus artifacts"
@@ -180,14 +193,14 @@ jobs:
           FAIL_COUNT=0
           FAILURES=""
           
-          for artifact in ${{ inputs.corpus-path }}/invalid/*.json; do
+          for artifact in "${CORPUS_PATH}"/invalid/*.json; do
             if [ ! -f "$artifact" ]; then
               continue
             fi
             
             basename=$(basename "$artifact")
             stem=$(basename "$artifact" .json)
-            expected_file="${{ inputs.corpus-path }}/expected/${stem}.errs.json"
+            expected_file="${CORPUS_PATH}/expected/${stem}.errs.json"
             
             if [ ! -f "$expected_file" ]; then
               echo "⚠️  $basename - missing expected output file"
@@ -197,7 +210,7 @@ jobs:
             fi
             
             # Run validator and capture output
-            OUTPUT=$(${{ inputs.validate-command }} "$artifact" 2>&1) || {
+            OUTPUT=$($VALIDATE_CMD "$artifact" 2>&1) || {
               echo "❌ $basename - validator command failed"
               echo "   Output: $OUTPUT"
               FAIL_COUNT=$((FAIL_COUNT + 1))
@@ -254,6 +267,9 @@ jobs:
       - name: Check determinism (run 3 times)
         id: determinism
         working-directory: mirror-repo
+        env:
+          CORPUS_PATH: ${{ inputs.corpus-path }}
+          VALIDATE_CMD: ${{ inputs.validate-command }}
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "Checking Determinism (3 iterations)"
@@ -261,8 +277,8 @@ jobs:
           echo ""
           
           # Pick first valid and first invalid artifact for determinism check
-          VALID_ARTIFACT=$(find ${{ inputs.corpus-path }}/valid -name "*.json" | head -1)
-          INVALID_ARTIFACT=$(find ${{ inputs.corpus-path }}/invalid -name "*.json" | head -1)
+          VALID_ARTIFACT=$(find "${CORPUS_PATH}"/valid -name "*.json" | head -1)
+          INVALID_ARTIFACT=$(find "${CORPUS_PATH}"/invalid -name "*.json" | head -1)
           
           if [ -z "$VALID_ARTIFACT" ] || [ -z "$INVALID_ARTIFACT" ]; then
             echo "⚠️  WARNING: Could not find test artifacts for determinism check"
@@ -276,9 +292,9 @@ jobs:
           echo ""
           
           # Run valid artifact 3 times
-          OUT1=$(${{ inputs.validate-command }} "$VALID_ARTIFACT" 2>&1)
-          OUT2=$(${{ inputs.validate-command }} "$VALID_ARTIFACT" 2>&1)
-          OUT3=$(${{ inputs.validate-command }} "$VALID_ARTIFACT" 2>&1)
+          OUT1=$($VALIDATE_CMD "$VALID_ARTIFACT" 2>&1)
+          OUT2=$($VALIDATE_CMD "$VALID_ARTIFACT" 2>&1)
+          OUT3=$($VALIDATE_CMD "$VALID_ARTIFACT" 2>&1)
           
           DETERMINISTIC=true
           
@@ -293,9 +309,9 @@ jobs:
           fi
           
           # Run invalid artifact 3 times
-          OUT1=$(${{ inputs.validate-command }} "$INVALID_ARTIFACT" 2>&1)
-          OUT2=$(${{ inputs.validate-command }} "$INVALID_ARTIFACT" 2>&1)
-          OUT3=$(${{ inputs.validate-command }} "$INVALID_ARTIFACT" 2>&1)
+          OUT1=$($VALIDATE_CMD "$INVALID_ARTIFACT" 2>&1)
+          OUT2=$($VALIDATE_CMD "$INVALID_ARTIFACT" 2>&1)
+          OUT3=$($VALIDATE_CMD "$INVALID_ARTIFACT" 2>&1)
           
           if [ "$OUT1" != "$OUT2" ] || [ "$OUT1" != "$OUT3" ]; then
             echo "❌ FAIL: Invalid artifact outputs differ across runs"
@@ -318,26 +334,25 @@ jobs:
       
       - name: Generate summary
         id: summary
+        env:
+          VALID_PASS: ${{ steps.validate_valid.outputs.valid_pass }}
+          VALID_FAIL: ${{ steps.validate_valid.outputs.valid_fail }}
+          VALID_TOTAL: ${{ steps.validate_valid.outputs.valid_total }}
+          INVALID_PASS: ${{ steps.validate_invalid.outputs.invalid_pass }}
+          INVALID_FAIL: ${{ steps.validate_invalid.outputs.invalid_fail }}
+          INVALID_TOTAL: ${{ steps.validate_invalid.outputs.invalid_total }}
+          DETERMINISM: ${{ steps.determinism.outputs.determinism_pass }}
+          LANGUAGE: ${{ inputs.language }}
         run: |
-          VALID_PASS=${{ steps.validate_valid.outputs.valid_pass }}
-          VALID_FAIL=${{ steps.validate_valid.outputs.valid_fail }}
-          VALID_TOTAL=${{ steps.validate_valid.outputs.valid_total }}
-          
-          INVALID_PASS=${{ steps.validate_invalid.outputs.invalid_pass }}
-          INVALID_FAIL=${{ steps.validate_invalid.outputs.invalid_fail }}
-          INVALID_TOTAL=${{ steps.validate_invalid.outputs.invalid_total }}
-          
           TOTAL_PASS=$((VALID_PASS + INVALID_PASS))
           TOTAL_FAIL=$((VALID_FAIL + INVALID_FAIL))
           TOTAL=$((VALID_TOTAL + INVALID_TOTAL))
-          
-          DETERMINISM="${{ steps.determinism.outputs.determinism_pass }}"
           
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "FINAL SUMMARY"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo ""
-          echo "Mirror Language: ${{ inputs.language }}"
+          echo "Mirror Language: ${LANGUAGE}"
           echo ""
           echo "Valid Corpus:   $VALID_PASS/$VALID_TOTAL passed"
           echo "Invalid Corpus: $INVALID_PASS/$INVALID_TOTAL passed"
@@ -385,16 +400,27 @@ jobs:
       - name: Post PR comment with results
         if: github.event_name == 'pull_request'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        env:
+          PASSED: ${{ steps.summary.outputs.passed }}
+          VALID_PASS: ${{ steps.summary.outputs.valid_pass }}
+          VALID_TOTAL: ${{ steps.summary.outputs.valid_total }}
+          INVALID_PASS: ${{ steps.summary.outputs.invalid_pass }}
+          INVALID_TOTAL: ${{ steps.summary.outputs.invalid_total }}
+          TOTAL_PASS: ${{ steps.summary.outputs.total_pass }}
+          TOTAL: ${{ steps.summary.outputs.total }}
+          DETERMINISM: ${{ steps.determinism.outputs.determinism_pass }}
+          LANGUAGE: ${{ inputs.language }}
         with:
           script: |
-            const passed = '${{ steps.summary.outputs.passed }}' === 'true';
-            const validPass = parseInt('${{ steps.summary.outputs.valid_pass }}');
-            const validTotal = parseInt('${{ steps.summary.outputs.valid_total }}');
-            const invalidPass = parseInt('${{ steps.summary.outputs.invalid_pass }}');
-            const invalidTotal = parseInt('${{ steps.summary.outputs.invalid_total }}');
-            const totalPass = parseInt('${{ steps.summary.outputs.total_pass }}');
-            const total = parseInt('${{ steps.summary.outputs.total }}');
-            const determinism = '${{ steps.determinism.outputs.determinism_pass }}';
+            const passed = process.env.PASSED === 'true';
+            const validPass = parseInt(process.env.VALID_PASS);
+            const validTotal = parseInt(process.env.VALID_TOTAL);
+            const invalidPass = parseInt(process.env.INVALID_PASS);
+            const invalidTotal = parseInt(process.env.INVALID_TOTAL);
+            const totalPass = parseInt(process.env.TOTAL_PASS);
+            const total = parseInt(process.env.TOTAL);
+            const determinism = process.env.DETERMINISM;
+            const language = process.env.LANGUAGE;
             
             let validFailures = '';
             let invalidFailures = '';
@@ -416,7 +442,7 @@ jobs:
             const percentage = total > 0 ? Math.round((totalPass * 100) / total) : 0;
             
             let comment = `## ${icon} Base120 Mirror Conformance: ${status}\n\n`;
-            comment += `**Language**: ${{ inputs.language }}\n\n`;
+            comment += `**Language**: ${language}\n\n`;
             comment += `### Results\n\n`;
             comment += `| Category | Passed | Total | Rate |\n`;
             comment += `|----------|--------|-------|------|\n`;
